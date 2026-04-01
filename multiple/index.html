@@ -1,0 +1,5822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智能训练师（三级）多选题考试系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .option-checkbox:checked + label,
+        .wrong-option-checkbox:checked + label,
+        .random-option-checkbox:checked + label {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .option-checkbox:checked + label .check-dot,
+        .wrong-option-checkbox:checked + label .check-dot,
+        .random-option-checkbox:checked + label .check-dot {
+            display: inline-block;
+            color: #000;
+        }
+        .option-checkbox:checked + label .fa-check,
+        .wrong-option-checkbox:checked + label .fa-check,
+        .random-option-checkbox:checked + label .fa-check {
+            color: #000;
+        }
+        .correct-answer {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        .missed-answer {
+            background-color: #fef9c3 !important;
+            border-color: #eab308 !important;
+        }
+    
+        .option-checkbox:checked + label .check-dot,
+        .wrong-option-checkbox:checked + label .check-dot,
+        .random-option-checkbox:checked + label .check-dot {
+            display: inline-block;
+        }</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 开始答题界面 -->
+    <div id="start-screen" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-10 max-w-lg w-full mx-4 text-center">
+            <!-- Logo区域 -->
+            <div class="mb-6 flex justify-center">
+                <img src="../images/logo.png" alt="公司Logo" class="w-24 h-24 object-contain">
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">人工智能训练师（三级）</h1>
+            <h2 class="text-2xl font-bold text-gray-700 mb-6">多选题考试系统</h2>
+            <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                <div class="grid grid-cols-2 gap-4 text-left">
+                    <div class="flex items-center">
+                        <i class="fa fa-list-ol text-blue-600 mr-2"></i>
+                        <span class="text-gray-700">题目数量：<strong>159</strong> 道</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-star text-yellow-500 mr-2"></i>
+                        <span class="text-gray-700">每题分数：<strong>1</strong> 分</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-check-square text-green-600 mr-2"></i>
+                        <span class="text-gray-700">题目类型：多选题</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fa fa-clock-o text-orange-500 mr-2"></i>
+                        <span class="text-gray-700">计时方式：自动计时</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-left">
+                <div class="flex">
+                    <i class="fa fa-info-circle text-yellow-400 mr-2 mt-1"></i>
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            <strong>考试说明：</strong>
+                        </p>
+                        <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                            <li>• 每道题有两个或多个正确答案</li>
+                            <li>• 点击"开始答题"后计时器自动启动</li>
+                            <li>• 答题完成后点击"提交答案"查看结果</li>
+                            <li>• 错题自动加入错题集，可针对性练习</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="flex gap-3">
+                <button onclick="startExam()" class="w-full px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fa fa-play mr-2"></i>
+                    开始答题
+                </button>
+            </div>
+            <div class="flex gap-3 mt-3">
+                <button onclick="startRandomPractice()" class="w-full px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fa fa-random mr-2"></i>
+                    随机练习20题
+                </button>
+            </div>
+            <div class="mt-4">
+                <button onclick="clearWrongQuestionsSet()" class="text-sm text-gray-500 hover:text-red-500 transition">
+                    <i class="fa fa-trash mr-1"></i>
+                    清空错题集
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错题集练习界面 -->
+    <div id="wrong-questions-screen" class="fixed inset-0 bg-gray-100 hidden z-45 overflow-y-auto">
+        <div class="container mx-auto px-4 py-8 max-w-4xl pt-20">
+            <!-- 错题集头部 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fa fa-exclamation-triangle text-orange-500"></i>
+                        错题集练习
+                    </h2>
+                    <button onclick="closeWrongQuestionsSet()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                        <i class="fa fa-arrow-left mr-2"></i>
+                        返回
+                    </button>
+                </div>
+                <div class="text-gray-600" id="wrong-questions-info">
+                    正在加载错题集...
+                </div>
+            </div>
+
+            <!-- 错题列表 -->
+            <div id="wrong-questions-list" class="space-y-4 pb-20">
+                <!-- 错题将动态加载 -->
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 border-t z-50">
+                <div class="container mx-auto max-w-4xl flex justify-between items-center">
+                    <button onclick="closeWrongQuestionsSet()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                        <i class="fa fa-arrow-left"></i> 返回
+                    </button>
+                    <button onclick="submitWrongQuestionsPractice()" class="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition font-bold">
+                        <i class="fa fa-check"></i> 提交练习
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 随机练习界面 -->
+    <div id="random-practice-screen" class="fixed inset-0 bg-gray-100 hidden z-45 overflow-y-auto">
+        <!-- 固定顶部信息栏 -->
+        <div id="random-practice-header-bar" class="fixed top-0 left-0 right-0 bg-white shadow-lg z-40 hidden">
+            <div class="container mx-auto px-4 py-2 max-w-4xl">
+                <!-- Logo和标题居中 -->
+                <div class="flex flex-col items-center justify-center text-center mb-2">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <img src="../images/logo.png" alt="公司Logo" class="w-6 h-6 object-contain">
+                        <h2 class="text-lg font-bold text-gray-800 leading-tight">随机练习20题</h2>
+                    </div>
+                </div>
+
+                <!-- 进度和用时 -->
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- 答题进度 -->
+                    <div class="bg-gray-50 rounded-lg p-1.5">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-medium text-gray-700">答题进度</span>
+                            <span class="text-xs font-medium text-green-600" id="random-progress-text">0 / 20</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1">
+                            <div class="bg-green-600 h-1 rounded-full transition-all duration-300" id="random-progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 用时 -->
+                    <div class="bg-gray-50 rounded-lg p-1.5 flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-700">
+                            <i class="fa fa-clock-o text-green-600"></i> 用时
+                        </span>
+                        <span class="text-sm font-bold text-green-600" id="random-timer">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题目列表区域 -->
+        <div class="container mx-auto px-4 max-w-4xl pt-60">
+            <!-- 随机题目列表 -->
+            <div id="random-questions-list" class="space-y-4 pb-20">
+                <!-- 随机题目将动态加载 -->
+            </div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-3 border-t z-50">
+            <div class="container mx-auto max-w-4xl flex justify-between gap-2">
+                <button onclick="closeRandomPractice()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition text-sm">
+                    <i class="fa fa-arrow-left"></i>
+                    返回
+                </button>
+                <button onclick="continueRandomPractice()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm">
+                    <i class="fa fa-refresh mr-1"></i>
+                    继续练习
+                </button>
+                <button onclick="submitRandomPractice()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold text-sm">
+                    <i class="fa fa-check mr-1"></i>
+                    提交练习
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 固定顶部信息栏 -->
+    <div id="header-bar" class="fixed top-0 left-0 right-0 bg-white shadow-lg z-40 hidden">
+        <div class="container mx-auto px-4 py-2 max-w-4xl">
+            <!-- 头部 -->
+            <header class="mb-3 relative">
+                <!-- 错题集练习按钮 - 绝对定位在右侧 -->
+                <button onclick="showWrongQuestionsSet()" class="absolute right-0 top-0 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm font-medium">
+                    <i class="fa fa-exclamation-triangle mr-1"></i>
+                    错题集练习
+                </button>
+
+                <!-- 居中的Logo和标题 -->
+                <div class="flex flex-col items-center justify-center text-center mb-2">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <img src="../images/logo.png" alt="公司Logo" class="w-8 h-8 object-contain">
+                        <h1 class="text-xl font-bold text-gray-800 leading-tight">人工智能训练师（三级）多选题考试系统</h1>
+                    </div>
+                    <p class="text-gray-600 text-xs">共 159 道题目，每题 1 分</p>
+                </div>
+            </header>
+
+            <!-- 进度条和计时器 -->
+            <!-- 答题进度 -->
+            <div class="bg-gray-50 rounded-lg p-1.5 mb-1.5">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium text-gray-700">答题进度</span>
+                    <span class="text-xs font-medium text-blue-600" id="progress-text">0 / 160</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1">
+                    <div class="bg-blue-600 h-1 rounded-full transition-all duration-300" id="progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- 用时 -->
+            <div class="bg-gray-50 rounded-lg p-1.5 mb-1.5 flex justify-between items-center">
+                <span class="text-xs font-medium text-gray-700">
+                    <i class="fa fa-clock-o text-green-600"></i> 用时
+                </span>
+                <span class="text-sm font-bold text-green-600" id="timer">00:00:00</span>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="relative">
+                <input type="text"
+                       id="search-input"
+                       placeholder="搜索题干内容..."
+                       class="w-full px-3 py-1.5 pl-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-xs"
+                       oninput="searchQuestions(this.value)">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                <button onclick="clearSearch()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition text-xs" id="clear-search-btn" style="display: none;">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="container mx-auto px-4 max-w-4xl pt-60">
+        <!-- 题目列表 -->
+        <div id="questions-container" class="space-y-4 pb-20 hidden">
+            <!-- 题目将通过JavaScript动态加载 -->
+        </div>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div id="submit-bar" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-3 border-t z-50 hidden">
+            <div class="container mx-auto max-w-4xl flex justify-between items-center">
+                <button onclick="resetAll()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    <i class="fa fa-refresh"></i> 重置
+                </button>
+                <button onclick="submitExam()" class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold">
+                    <i class="fa fa-check"></i> 提交答案
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜索结果弹窗 -->
+        <div id="search-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fa fa-search text-blue-600 mr-2"></i>
+                        搜索结果
+                    </h2>
+                    <button onclick="closeSearchModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div id="search-results" class="space-y-3">
+                    <!-- 搜索结果将动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果弹窗 -->
+        <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold text-center mb-6" id="result-title"></h2>
+                <div id="result-content"></div>
+                <div class="flex justify-center gap-4 mt-6">
+                    <button onclick="closeModal()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                        关闭
+                    </button>
+                    <button onclick="reviewWrongAnswers()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        查看错题
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 题目数据（内嵌）
+        const questions = [
+{
+"number": 1,
+"question": "职业道德是一定职业领域中的人们应该坚持的一种行为准则，这种准则通常基于().",
+"options": [
+{
+"letter": "A",
+"text": "高尚情操",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "社会舆论",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "传统习惯",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "内心信念",
+"is_correct": true
+}
+]
+},
+{
+"number": 2,
+"question": "职业道德的特征主要表现为:一定的强制性、利益的相关性、().",
+"options": [
+{
+"letter": "A",
+"text": "鲜明的行业性",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "范围的有限性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "相对的稳定性",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "形式的多样性",
+"is_correct": true
+}
+]
+},
+{
+"number": 3,
+"question": "在企业中，激发团队合作意识是一个推动持续发展的原动力，因为这使得员工们更加有()。",
+"options": [
+{
+"letter": "A",
+"text": "使命感",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "情感",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "责任感",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "艺术感",
+"is_correct": false
+}
+]
+},
+{
+"number": 4,
+"question": "职业道德行为的评价可以根据评价主体的不同分为三种类型，分别为()。",
+"options": [
+{
+"letter": "A",
+"text": "社会评价",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "集体评价",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "自我评价",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "对手评价",
+"is_correct": false
+}
+]
+},
+{
+"number": 5,
+"question": "敬业包括了()等方面的内容。",
+"options": [
+{
+"letter": "A",
+"text": "恪尽职守",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "勤奋努力",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "享受工作",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "精益求精",
+"is_correct": true
+}
+]
+},
+{
+"number": 6,
+"question": "对于一个出色的团队而言，其合作品质包括()。",
+"options": [
+{
+"letter": "A",
+"text": "成员对团队强烈的归属感",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "团队有钱",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "团队具有强大的凝聚力",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "团队有很强人脉",
+"is_correct": false
+}
+]
+},
+{
+"number": 7,
+"question": "纪律是指()等各种规定，以及针对特定行业有关安全生产的指引和规范。",
+"options": [
+{
+"letter": "A",
+"text": "规章制度",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "准则",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "工作职责",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "公约、守则、条例",
+"is_correct": true
+}
+]
+},
+{
+"number": 8,
+"question": "生产经营单位须时常()安全设备，定期检查以确保其能正常运作。",
+"options": [
+{
+"letter": "A",
+"text": "维护",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "更换",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "保养",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "转移",
+"is_correct": false
+}
+]
+},
+{
+"number": 9,
+"question": "在个人的职业生涯中，诚信是保障其()的关键因素。",
+"options": [
+{
+"letter": "A",
+"text": "生存力",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "发展力",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "资历",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "能力",
+"is_correct": false
+}
+]
+},
+{
+"number": 10,
+"question": "计算机的主机由多个部分组成，其中包括().",
+"options": [
+{
+"letter": "A",
+"text": "显示器",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "主板",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "内存",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "显卡",
+"is_correct": true
+}
+]
+},
+{
+"number": 11,
+"question": "以下选项哪些是操作系统?",
+"options": [
+{
+"letter": "A",
+"text": "Windows XP",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Unix",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "Linux",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "PhotoShop",
+"is_correct": false
+}
+]
+},
+{
+"number": 12,
+"question": "在网络传输中，常见的传输介质包括().",
+"options": [
+{
+"letter": "A",
+"text": "电线",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "双绞线",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "同轴电缆",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "电话线",
+"is_correct": true
+}
+]
+},
+{
+"number": 13,
+"question": "主要影响信息安全的方面包括().",
+"options": [
+{
+"letter": "A",
+"text": "技术因素",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "自然因素",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "环境因素",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "人为因素",
+"is_correct": true
+}
+]
+},
+{
+"number": 14,
+"question": "()是常见的数据库管理系统。",
+"options": [
+{
+"letter": "A",
+"text": "Excel",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "Access",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "SQL Server",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "Visual FoxPro",
+"is_correct": true
+}
+]
+},
+{
+"number": 15,
+"question": "Windows优化大师是一个工具软件，能够帮助用户检提供()等功能.",
+"options": [
+{
+"letter": "A",
+"text": "系统检测",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "系统优化",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "系统清理",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "系统维护",
+"is_correct": true
+}
+]
+},
+{
+"number": 16,
+"question": "计算机的显著特点包括().",
+"options": [
+{
+"letter": "A",
+"text": "运算速度快",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "计算精度高",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "存储功能强",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "具有逻辑判断能力",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "在程序控制下自动进行处理",
+"is_correct": true
+}
+]
+},
+{
+"number": 17,
+"question": "Windows 7包含了多款系统工具，包括()。",
+"options": [
+{
+"letter": "A",
+"text": "碎片整理程序",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "磁盘清理",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "系统数据备份",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "记事本",
+"is_correct": false
+}
+]
+},
+{
+"number": 18,
+"question": "计算机根据物理器件的不同类型进行分类，包括()",
+"options": [
+{
+"letter": "A",
+"text": "电子管",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "晶体管",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "中、小规模集成电路",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "大规模、超大规模集成电路",
+"is_correct": true
+}
+]
+},
+{
+"number": 19,
+"question": "当使用WPS表格时，涉及到三个重要的概念，分别为().",
+"options": [
+{
+"letter": "A",
+"text": "工作薄",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "工作表",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "单元格",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "视图",
+"is_correct": false
+}
+]
+},
+{
+"number": 20,
+"question": "计算机病毒的特点包括具有().",
+"options": [
+{
+"letter": "A",
+"text": "传染性",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "隐蔽性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "潜伏性",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "破坏性",
+"is_correct": true
+}
+]
+},
+{
+"number": 21,
+"question": "在IE浏览器中，可以通过管理“收藏夹\"功能来实现对文件夹的()等各种管理操作。",
+"options": [
+{
+"letter": "A",
+"text": "创建文件夹",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "重命名",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "删除",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "移动",
+"is_correct": true
+}
+]
+},
+{
+"number": 22,
+"question": "()是最常被使用的搜索引擎。",
+"options": [
+{
+"letter": "A",
+"text": "百度",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Google",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "QQ",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "163",
+"is_correct": false
+}
+]
+},
+{
+"number": 23,
+"question": "常见的互联网免费邮箱包括但不限于网易()等。",
+"options": [
+{
+"letter": "A",
+"text": "网易126邮箱",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "搜狐邮箱",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "新浪邮箱",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "雅虎邮箱",
+"is_correct": true
+}
+]
+},
+{
+"number": 24,
+"question": "()是常用的下载软件。",
+"options": [
+{
+"letter": "A",
+"text": "迅雷",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "BT",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "电驴",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "QQ",
+"is_correct": false
+}
+]
+},
+{
+"number": 25,
+"question": "（）是声音的三要素。",
+"options": [
+{
+"letter": "A",
+"text": "音乐",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "音调",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "音色",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "音强",
+"is_correct": true
+}
+]
+},
+{
+"number": 26,
+"question": "多媒体软件分为()，根据不同的信息类型进行处理。",
+"options": [
+{
+"letter": "A",
+"text": "声音处理软件",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "图形图像处理软件",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "视频处理软件",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "表格处理软件",
+"is_correct": false
+}
+]
+},
+{
+"number": 27,
+"question": "常见的图像文件有().",
+"options": [
+{
+"letter": "A",
+"text": "jpg",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "bmp",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "wps",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "mp3",
+"is_correct": false
+}
+]
+},
+{
+"number": 28,
+"question": "根据《劳动法》，劳动者()，用人单位就有权终止劳动合同。",
+"options": [
+{
+"letter": "A",
+"text": "在试用期间被证明不符合录用条件的",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "不服从用人单位领导不合理的工作安排",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "严重违反用人单位的规章制度的",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "劳动者违反竞业限制约定",
+"is_correct": false
+}
+]
+},
+{
+"number": 29,
+"question": "根据《合同法》，广告指在报纸、()等媒介上发布的，目的在于推销和宣传商品或服务的一种行为。",
+"options": [
+{
+"letter": "A",
+"text": "杂志",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "广播",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "电视",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "互联网",
+"is_correct": true
+}
+]
+},
+{
+"number": 30,
+"question": "《网络安全法》指出，网络运营者必须建立网络信息()等信息，及时受理和处理有关网络信息安全方面的投诉和举报。",
+"options": [
+{
+"letter": "A",
+"text": "安全投诉",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "举报制度",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "公布投诉",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "举报方式",
+"is_correct": true
+}
+]
+},
+{
+"number": 31,
+"question": "根据《知识产权法》，在电视台播放他人制作的电影、电视节目和录像时，必须先获()和()的授权，并支付相应的费用。",
+"options": [
+{
+"letter": "A",
+"text": "电影、电视制片者",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "表演者",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "录像制作者",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "原播放该录像制品的电视台",
+"is_correct": false
+}
+]
+},
+{
+"number": 32,
+"question": "根据《计算机软件保护条例》的规定，()等都属于侵权行为，对此侵权者必须根据事实情况承担相应的民事责任，包括但不限于停止侵权、消除不良影响、道歉赔礼、赔偿损失等。",
+"options": [
+{
+"letter": "A",
+"text": "未经软件著作权人许可，发表或者登记其软件的",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "将他人软件作为自己的软件发表或者登记的",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "在他人软件上署名或者更改他人软件上的署名的",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "其他侵犯软件著作权的行为",
+"is_correct": true
+}
+]
+},
+{
+"number": 33,
+"question": "《中华人民共和国计算机信息网络国际联网管理暂行规定实施办法》明确规定，中国互联网络信息中心负责管理()。",
+"options": [
+{
+"letter": "A",
+"text": "互联网络地址",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "域名",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "网络资源目录管理",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "有关的信息服务",
+"is_correct": true
+}
+]
+},
+{
+"number": 34,
+"question": "ETL数据整合工具的主要功能包括().",
+"options": [
+{
+"letter": "A",
+"text": "数据抽取(E)",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据转换(T)",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据加载(L)",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "数据备份(B)",
+"is_correct": false
+}
+]
+},
+{
+"number": 35,
+"question": "主要从以下()方面来衡量ETL技术选型。",
+"options": [
+{
+"letter": "A",
+"text": "成本",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "人员",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "相关案例",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "技术支持",
+"is_correct": true
+}
+]
+},
+{
+"number": 36,
+"question": "ETL数据整合的功能包括().",
+"options": [
+{
+"letter": "A",
+"text": "业务需求",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据评估",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据集成",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "最终用户提交界面",
+"is_correct": true
+}
+]
+},
+{
+"number": 37,
+"question": "ETL数据整合工具的关键技术包括().",
+"options": [
+{
+"letter": "A",
+"text": "数据清洗",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据去重",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "��据转换",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "数据加载",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "数据清空",
+"is_correct": false
+}
+]
+},
+{
+"number": 38,
+"question": "()是数据增量抽取的模式。",
+"options": [
+{
+"letter": "A",
+"text": "触发器模式",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "时间戳方式",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "全表对比方式",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "日志对比方式",
+"is_correct": true
+}
+]
+},
+{
+"number": 39,
+"question": "在数据清洗中，()是数据转换的过程中会出现的错误。",
+"options": [
+{
+"letter": "A",
+"text": "命名错误",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "格式错误",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "结构错误",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "模型发布错误",
+"is_correct": false
+}
+]
+},
+{
+"number": 40,
+"question": "()是从网络爬虫的角度对互联网进行划分对应的部分。",
+"options": [
+{
+"letter": "A",
+"text": "已下载的(包括未过期和已过期)网页",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "待下载网页",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "可知网页",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "不可知网页",
+"is_correct": true
+}
+]
+},
+{
+"number": 41,
+"question": "()是数据质量评估标准。",
+"options": [
+{
+"letter": "A",
+"text": "完整性",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "准确性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "经济性",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "一致性",
+"is_correct": true
+}
+]
+},
+{
+"number": 42,
+"question": "在数据清洗中，增量抽取机制适用于()特点的数据表。",
+"options": [
+{
+"letter": "A",
+"text": "源表数据不变化",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "源表变化数据相对数据总量较小",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "目标表需要记录过期信息或者冗余信息",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "业务系统能直接提供增量数据",
+"is_correct": true
+}
+]
+},
+{
+"number": 43,
+"question": "当出现错误时，处理数据的方法可以包括().",
+"options": [
+{
+"letter": "A",
+"text": "删除错误数据",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "错误数据替换",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "分离对待",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "不做任何处理",
+"is_correct": false
+}
+]
+},
+{
+"number": 44,
+"question": "在数据挖掘分析中，如果某个重要数据缺失，可以使用()行填补。",
+"options": [
+{
+"letter": "A",
+"text": "均值",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "中位数",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "方差",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "众数",
+"is_correct": true
+}
+]
+},
+{
+"number": 45,
+"question": "()是常用的数据平滑去噪的技术。",
+"options": [
+{
+"letter": "A",
+"text": "回归",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "分箱",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "分析关联",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "离群点分析",
+"is_correct": true
+}
+]
+},
+{
+"number": 46,
+"question": "以下()步骤是特征规约算法的一部分。",
+"options": [
+{
+"letter": "A",
+"text": "搜索过程",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "填补过程",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "评估过程",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "分类过程",
+"is_correct": true
+}
+]
+},
+{
+"number": 47,
+"question": "在样本规约过程中，确定子集大小时需要考虑()以及其他与算法和数据特性相关的因素。",
+"options": [
+{
+"letter": "A",
+"text": "计算成本",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "存储要求",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "估计量的精度",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "估计量的范围",
+"is_correct": false
+}
+]
+},
+{
+"number": 48,
+"question": "有参特征值的归约方法，其中包括回归和对数线性模型。",
+"options": [
+{
+"letter": "A",
+"text": "回归",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "直方图",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "对数线性模型",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "选择",
+"is_correct": false
+}
+]
+},
+{
+"number": 49,
+"question": "()函数是纵向数据抽取中最常用的函数。",
+"options": [
+{
+"letter": "A",
+"text": "split ()",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "slice ()",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "splice ()",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "concat ()",
+"is_correct": false
+}
+]
+},
+{
+"number": 50,
+"question": "要使用决策树方法，需要具备()要素。",
+"options": [
+{
+"letter": "A",
+"text": "具有决策者期望达到的明确目标",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "存在决策者可以选择的两个以上的可行备选方案",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "存在着决策者无法控制的两种以上的自然状态(如天气)",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "不同行动方案在不同自然状态下的收益值或损失值可以计算出来",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "决策者能估计出不同的自然状态发生概率",
+"is_correct": true
+}
+]
+},
+{
+"number": 51,
+"question": "Kafka的构架包括了三个关键组件，分别为()。",
+"options": [
+{
+"letter": "A",
+"text": "Consumers",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Spark",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "Broker",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "Producers",
+"is_correct": true
+}
+]
+},
+{
+"number": 52,
+"question": "相比于传统的数据采集方法，分布式数据库采用更先进的方法进行数据采集，具备()的特点。",
+"options": [
+{
+"letter": "A",
+"text": "具有更高的数据访问速度",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "具有更强的可扩展性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "更多的资源消耗",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "更高的并发访问量",
+"is_correct": true
+}
+]
+},
+{
+"number": 53,
+"question": "数据清洗的主要目的是().",
+"options": [
+{
+"letter": "A",
+"text": "数据格式标准化",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "异常数据清理",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据错误纠正",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "重复数据的清除",
+"is_correct": true
+}
+]
+},
+{
+"number": 54,
+"question": "在互联网上，存在着大量以共享和开放形式存在的数据资源。为了获取这些数据，通常会使用()等技术从网页中抽取所需的信息。",
+"options": [
+{
+"letter": "A",
+"text": "传感器",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "网络爬虫",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "复制黏贴",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "公开API",
+"is_correct": true
+}
+]
+},
+{
+"number": 55,
+"question": "业务流程可以根据活动内容的不同被细分为()三种类型。",
+"options": [
+{
+"letter": "A",
+"text": "多结构化业务流程",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "完全结构化业务流程",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "半结构化业务流程",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "非结构化业务流程",
+"is_correct": true
+}
+]
+},
+{
+"number": 56,
+"question": "Harrington将业务流程管理分为()。",
+"options": [
+{
+"letter": "A",
+"text": "理解流程",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "梳理流程",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "执行流程",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "测量与控制流程",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "持续改进流程",
+"is_correct": true
+}
+]
+},
+{
+"number": 57,
+"question": "20世纪30-60年代，企业意识到()对于企业的生死攸关。",
+"options": [
+{
+"letter": "A",
+"text": "资金运营",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "现金流",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "信息流",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "企业财务效益",
+"is_correct": true
+}
+]
+},
+{
+"number": 58,
+"question": "数据标注是对原始素材进行()等操作。",
+"options": [
+{
+"letter": "A",
+"text": "分类",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "统计分析",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "标框",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "描点",
+"is_correct": true
+}
+]
+},
+{
+"number": 59,
+"question": "要进行数据的质量检查，可以使用()的方法。",
+"options": [
+{
+"letter": "A",
+"text": "普查",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "排查",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "抽查",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "检查",
+"is_correct": false
+}
+]
+},
+{
+"number": 60,
+"question": "()是常见数据标注对象分类。",
+"options": [
+{
+"letter": "A",
+"text": "图像标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "语音标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "文本标注",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "视频标注",
+"is_correct": true
+}
+]
+},
+{
+"number": 61,
+"question": "医疗行业通过()等应用，结合机器学习技术，快速实现医学编码和注释。",
+"options": [
+{
+"letter": "A",
+"text": "人体标框",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "3D画框",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "骨骼点标记",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "病历转录",
+"is_correct": true
+}
+]
+},
+{
+"number": 62,
+"question": "()是常用的关键点标注。",
+"options": [
+{
+"letter": "A",
+"text": "手势21个关键点标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "人脸68个关键点标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "人脸108个关键点标注",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "人体22个关键点标注",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "动物脸部关键点标注",
+"is_correct": true
+}
+]
+},
+{
+"number": 63,
+"question": "()是常用的标注团队。",
+"options": [
+{
+"letter": "A",
+"text": "统一管理的标注生产团队",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "众包团队",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "校企团队",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "私人团队",
+"is_correct": false
+}
+]
+},
+{
+"number": 64,
+"question": "()是常用的分类计数。",
+"options": [
+{
+"letter": "A",
+"text": "贝叶斯分类法",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "支持向量机",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "k-均值算法",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "周期性分析",
+"is_correct": false
+},
+{
+"letter": "E",
+"text": "决策树分类法",
+"is_correct": true
+}
+]
+},
+{
+"number": 65,
+"question": "一个包含数据标注的项目，可以运用项目管理知识，按照()的步骤进行全流程管理。",
+"options": [
+{
+"letter": "A",
+"text": "启动",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "规划",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "执行",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "监控",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "收尾",
+"is_correct": true
+}
+]
+},
+{
+"number": 66,
+"question": "大数据的采集研究可以分为()主要层次。",
+"options": [
+{
+"letter": "A",
+"text": "智能感知层",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据存储层",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "基础支撑层",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "数据处理层",
+"is_correct": false
+}
+]
+},
+{
+"number": 67,
+"question": "数据标准化处理主要涉及两个方面，分别是()。",
+"options": [
+{
+"letter": "A",
+"text": "最优化处理",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "数据同趋化处理",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "无量纲化处理",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "数据最大量处理",
+"is_correct": false
+}
+]
+},
+{
+"number": 68,
+"question": "数据规约是一种数据预处理技术，常见的方法包括",
+"options": [
+{
+"letter": "A",
+"text": "样本归约",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "数据采样",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "属性选择",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "特征归约",
+"is_correct": false
+},
+{
+"letter": "E",
+"text": "特征值归约",
+"is_correct": false
+}
+]
+},
+{
+"number": 69,
+"question": "以下哪些领域是数据清洗的主要应用范畴?",
+"options": [
+{
+"letter": "A",
+"text": "数据仓库(DW)",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据库中知识的发现(KDD)",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据挖掘(DM)",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "数据质量管理(DQM)",
+"is_correct": true
+}
+]
+},
+{
+"number": 70,
+"question": "实时的数据标注质量检验方法具有多个优点，包括()。",
+"options": [
+{
+"letter": "A",
+"text": "能够及时发现问题并解决问题",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "能够��效减少标注过程中重复错误的重复出现",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "对于人员的配备及管理要求较高",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "能够保证整体标注任务的流畅性",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "能够实时掌握数据标准的任务进度",
+"is_correct": true
+}
+]
+},
+{
+"number": 71,
+"question": "图像标注常用的方式包括()。",
+"options": [
+{
+"letter": "A",
+"text": "标框标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "区域标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "语音标注",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "视频标注",
+"is_correct": false
+}
+]
+},
+{
+"number": 72,
+"question": "语义标注的质量标准检验包括().",
+"options": [
+{
+"letter": "A",
+"text": "针对单独词语或语句进行检验",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "针对上下文的情景环境进行检验",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "针对文本出现的地方进行检验",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "针对语音数据中的语音语调进行检验",
+"is_correct": true
+}
+]
+},
+{
+"number": 73,
+"question": "对人脸数据进行标注通常包括().",
+"options": [
+{
+"letter": "A",
+"text": "人脸位置标框标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "特征点描点标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "分类标注",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "关系标注",
+"is_correct": false
+}
+]
+},
+{
+"number": 74,
+"question": "常用的文件扩展名，用于存储图像数据的标注结果，其中包括().",
+"options": [
+{
+"letter": "A",
+"text": "TXT",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "JSON",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "EXE",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "XML",
+"is_correct": true
+}
+]
+},
+{
+"number": 75,
+"question": "Python提供了多个数据合并的函数，包括()。",
+"options": [
+{
+"letter": "A",
+"text": "concat()",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "merge()",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "join()",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "append()",
+"is_correct": true
+}
+]
+},
+{
+"number": 76,
+"question": "数据清洗时，针对缺失值的处理方法包括()。",
+"options": [
+{
+"letter": "A",
+"text": "随机补充",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "忽略元组",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据补齐",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "不处理",
+"is_correct": true
+}
+]
+},
+{
+"number": 77,
+"question": "下列选项中，()是导致数据不完整的原因。",
+"options": [
+{
+"letter": "A",
+"text": "数据收集工具的问题",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据源不同所致",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "数据输入",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "传输错误",
+"is_correct": true
+}
+]
+},
+{
+"number": 78,
+"question": "在错误识别阶段，利用()等技术，自动检测数据属性中的错误。",
+"options": [
+{
+"letter": "A",
+"text": "统计",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "聚类",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "关联规则",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "随机抽取",
+"is_correct": false
+}
+]
+},
+{
+"number": 79,
+"question": "()是处理重复数据的常用方法。",
+"options": [
+{
+"letter": "A",
+"text": "合并",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "留存",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "拷贝",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "消除",
+"is_correct": true
+}
+]
+},
+{
+"number": 80,
+"question": "文本标注在客服行业中的应用主要聚焦于().",
+"options": [
+{
+"letter": "A",
+"text": "场景识别",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "应答识别",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "情绪识别",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "实体识别",
+"is_correct": false
+}
+]
+},
+{
+"number": 81,
+"question": "语音分割标注可分为()几种方式。",
+"options": [
+{
+"letter": "A",
+"text": "有效片段分割",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "无效片段分割",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "主说话人语音分割",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "起止时间段分割",
+"is_correct": true
+}
+]
+},
+{
+"number": 82,
+"question": "()是最常使用文本标注应用的行业。",
+"options": [
+{
+"letter": "A",
+"text": "安防行业",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "客服行业",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "金融行业",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "医疗行业",
+"is_correct": true
+}
+]
+},
+{
+"number": 83,
+"question": "语义分割是一种应用()等技术的方法，它能够将一幅图像分割成多个区域，每个区域能够被赋予一个具有语义含义的标签。",
+"options": [
+{
+"letter": "A",
+"text": "图像分类",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "目标检测",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "图像分割",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "声纹识别",
+"is_correct": false
+}
+]
+},
+{
+"number": 84,
+"question": "视频和图像数据标注的区别在于()。",
+"options": [
+{
+"letter": "A",
+"text": "视频数据结构比图像更复杂",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "与图像标注相比，视频标注更加简单",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "与图像标注相比，视频标注的难度又高了一级",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "使用自动化工具标注视频，发生错误的几率更低",
+"is_correct": true
+}
+]
+},
+{
+"number": 85,
+"question": "区域标注主要包含()类型。",
+"options": [
+{
+"letter": "A",
+"text": "开区域标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "闭区域标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "3D点云标注",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "描点标注",
+"is_correct": false
+}
+]
+},
+{
+"number": 86,
+"question": "文本标注主要包含()类型。",
+"options": [
+{
+"letter": "A",
+"text": "音素标注",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "序列标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "关系标注",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "属性标注",
+"is_correct": true
+}
+]
+},
+{
+"number": 87,
+"question": "每个人的嗓音具有独特的声谱图特征，这些特征主要包括()。",
+"options": [
+{
+"letter": "A",
+"text": "共鸣方式特征",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "嗓音纯度特征",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "平均音高特征",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "音域特征",
+"is_correct": true
+}
+]
+},
+{
+"number": 88,
+"question": "当数据标注集中存在大量噪声时，训练效果可能()，导致目标().",
+"options": [
+{
+"letter": "A",
+"text": "目标偏移",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "无法识别",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "特征值偏移",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "识别速度慢",
+"is_correct": false
+}
+]
+},
+{
+"number": 89,
+"question": "测试人工智能模型需要考虑().",
+"options": [
+{
+"letter": "A",
+"text": "测试用例",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "测试方法",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "测试计划",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "测试报告",
+"is_correct": true
+}
+]
+},
+{
+"number": 90,
+"question": "测试报告可以分为两种类型，分别是()。",
+"options": [
+{
+"letter": "A",
+"text": "版本测试报告",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "总结测试报告",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "单元测试报告",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "集成测试报告",
+"is_correct": false
+}
+]
+},
+{
+"number": 91,
+"question": "版本测试报告中的测试过程缺陷统计应当记录相关指标，包括()。",
+"options": [
+{
+"letter": "A",
+"text": "新建bug数",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "修复bug数",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "未修复bug数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "bug总数",
+"is_correct": true
+}
+]
+},
+{
+"number": 92,
+"question": "在系统测试阶段，常见的测试类型包括().",
+"options": [
+{
+"letter": "A",
+"text": "功能测试",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "兼容性测试",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "接口测试",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "性能测试",
+"is_correct": true
+}
+]
+},
+{
+"number": 93,
+"question": "常见的算法模型测试方法包括().",
+"options": [
+{
+"letter": "A",
+"text": "分类算法测试",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "回归算法测试",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "聚类算法测试",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "关联规则算法测试",
+"is_correct": false
+}
+]
+},
+{
+"number": 94,
+"question": "在常见的分类算法模型评估方法中，我们通常使用同样的方式计算()。",
+"options": [
+{
+"letter": "A",
+"text": "Recall",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Precision",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "F1值",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "均方误差",
+"is_correct": false
+}
+]
+},
+{
+"number": 95,
+"question": "算法测试中，用于评价分类算法模型的有效指标有()，它们的最佳表现均为1.0。",
+"options": [
+{
+"letter": "A",
+"text": "Recall",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "F1值",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "Cohen's Kappa系数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "均方误差",
+"is_correct": false
+}
+]
+},
+{
+"number": 96,
+"question": "以下是关于针对软件非功能方面的测试用例的描述，包括()。",
+"options": [
+{
+"letter": "A",
+"text": "安全测试用例",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "性能测试用例",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "兼容性测试用例",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "故障修复测试用例",
+"is_correct": true
+}
+]
+},
+{
+"number": 97,
+"question": "对于功能测试用例的作用，正确的叙述的是().",
+"options": [
+{
+"letter": "A",
+"text": "可以避免测试的盲目性",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "使得软件测试的实施重点突出、目的明确",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "在回归测试中无需修正测试用例便可继续开展测试工作",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "可有效地节省时间和资源，提高测试效率",
+"is_correct": true
+}
+]
+},
+{
+"number": 98,
+"question": "模型评价可以分为()关键步骤。",
+"options": [
+{
+"letter": "A",
+"text": "评估模型",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "评价结果",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "重审过程",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "确定下一步",
+"is_correct": true
+}
+]
+},
+{
+"number": 99,
+"question": "数据可视化的基本特点涵盖()方面。",
+"options": [
+{
+"letter": "A",
+"text": "易懂性",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "必然性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "片面性",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "专业性",
+"is_correct": true
+}
+]
+},
+{
+"number": 100,
+"question": "数据可视化是一种将数据运用集成起来的方法，它包括().",
+"options": [
+{
+"letter": "A",
+"text": "数据获取",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "导出报表",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "数据处理",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "可视化模式和可视化应用",
+"is_correct": true
+}
+]
+},
+{
+"number": 101,
+"question": "()是属于可视化分析工具。",
+"options": [
+{
+"letter": "A",
+"text": "Excel",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Processing",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "ECharts",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "PPT",
+"is_correct": false
+}
+]
+},
+{
+"number": 102,
+"question": "以下的()情形比较适合使用曲线图。",
+"options": [
+{
+"letter": "A",
+"text": "要表示两个变量之间的函数关系",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "描述某种现象在时间上的发展趋势",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "描述各事物之间的数量大小和数量之间的差异情况",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "描述一种变量随另一种变量变化的情形",
+"is_correct": true
+}
+]
+},
+{
+"number": 103,
+"question": "在进行机器学习时，通常需要对收集到的数据集进行分割，这个过程被称为数据集划分，即将原始数据集分为()。",
+"options": [
+{
+"letter": "A",
+"text": "训练数据集",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "验证数据集",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "测试数据集",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "评估数据集",
+"is_correct": false
+}
+]
+},
+{
+"number": 104,
+"question": "()是常见的模型评估方法。",
+"options": [
+{
+"letter": "A",
+"text": "留出法",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "交叉验证法",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "采样法",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "自助法",
+"is_correct": true
+}
+]
+},
+{
+"number": 105,
+"question": "过拟合的原因可能是由于()导致的。",
+"options": [
+{
+"letter": "A",
+"text": "模型本身过于复杂",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "模型本身过于简单",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "训练集样本过多",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "训练集样本过少",
+"is_correct": true
+}
+]
+},
+{
+"number": 106,
+"question": "卷积神经网络由若干基本层组成，包括().",
+"options": [
+{
+"letter": "A",
+"text": "输入层",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "卷积层",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "池化层",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "全连接层",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "输出层",
+"is_correct": true
+}
+]
+},
+{
+"number": 107,
+"question": "模型复杂度和数据集大小之间存在密切关系，说法正确的是()。",
+"options": [
+{
+"letter": "A",
+"text": "模型复杂度与训练数据集中输入数据的变化密切相关",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据集中包含的数据点变化范围越大，在不发生拟合情况下，模型就越复杂",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "更大的数据集可以用来构建更复杂的模型",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "仅复制相同的数据点或收集非常相似的数据，对构建复杂模型也有非常大的帮助",
+"is_correct": false
+}
+]
+},
+{
+"number": 108,
+"question": "()是常用的聚类性能度量外部指标。",
+"options": [
+{
+"letter": "A",
+"text": "Jaccard系数",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "FM指数",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "Rand指数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "B指数",
+"is_correct": false
+}
+]
+},
+{
+"number": 109,
+"question": "()是常用的聚类性能度量内部指标。",
+"options": [
+{
+"letter": "A",
+"text": "DB指数",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Rand指数",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "Dunn指数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "FM指数",
+"is_correct": false
+}
+]
+},
+{
+"number": 110,
+"question": "根据数据分析的深度，数据分析可分为().",
+"options": [
+{
+"letter": "A",
+"text": "筛选性分析",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "描述性分析",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "预测性分析",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "规则性分析",
+"is_correct": true
+}
+]
+},
+{
+"number": 111,
+"question": "()属于基本的数据统计分析方法。",
+"options": [
+{
+"letter": "A",
+"text": "最邻近算法",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "Kernel算法",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "PCA算法",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "图论算法",
+"is_correct": true
+}
+]
+},
+{
+"number": 112,
+"question": "常用的统计分析方法包括().",
+"options": [
+{
+"letter": "A",
+"text": "点估计",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "无偏估计",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "有效估计",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "区间估计",
+"is_correct": true
+}
+]
+},
+{
+"number": 113,
+"question": "()属于线性模型。",
+"options": [
+{
+"letter": "A",
+"text": "决策树",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "多项式回归",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "Lasso回归",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "岭回归",
+"is_correct": true
+}
+]
+},
+{
+"number": 114,
+"question": "关于逻辑回归说法正确的是()。",
+"options": [
+{
+"letter": "A",
+"text": "可并行化",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "因变量服从高斯分布",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "可解释强",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "可轻松处理0/1分类问题",
+"is_correct": true
+}
+]
+},
+{
+"number": 115,
+"question": "对比分析的常用维度包括().",
+"options": [
+{
+"letter": "A",
+"text": "与目标对比",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "不同时期对比",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "同级同部门、地区对比",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "行业内对比",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "活动效果对比",
+"is_correct": true
+}
+]
+},
+{
+"number": 116,
+"question": "使用分组分析法，可以按照步骤确定数据分组。",
+"options": [
+{
+"letter": "A",
+"text": "选择统计指标",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "确定组数",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "确定各组的组距",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "分组整理",
+"is_correct": true
+}
+]
+},
+{
+"number": 117,
+"question": "回归分析的一般流程涉及到()步骤。",
+"options": [
+{
+"letter": "A",
+"text": "初设回归方程",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "求出合理的回归系数",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "相关性检验，确定相关系数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "计算预测值的置信区间",
+"is_correct": true
+}
+]
+},
+{
+"number": 118,
+"question": "漏斗分析涉及的主要元素包括().",
+"options": [
+{
+"letter": "A",
+"text": "时间",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "变量",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "结点",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "研究对象",
+"is_correct": true
+}
+]
+},
+{
+"number": 119,
+"question": "某个APP的同一项功能采用AB测试方法进行优化，包含的内容有().",
+"options": [
+{
+"letter": "A",
+"text": "设计不同的样式风格",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "只是设计一种页面布局",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "将不同风格的页面随机分配给使用者",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "根绝浏览转化率来评估样式优劣",
+"is_correct": true
+}
+]
+},
+{
+"number": 120,
+"question": "针对数值类型数据，可以使用()来进行检验。",
+"options": [
+{
+"letter": "A",
+"text": "卡方检验",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "协方差",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "相关系数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "标准差",
+"is_correct": false
+}
+]
+},
+{
+"number": 121,
+"question": "关于贝叶斯定理针对的可能性函数，说法正确的是().",
+"options": [
+{
+"letter": "A",
+"text": "如果可能性函数大于1，意味着先验概率被增强",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "如果可能性函数小于1，意味着先验概率被增强",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "如果可能性函数大于1，意味着先验概率被削弱",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "如果可能性函数小于1，意味着先验概率被削弱",
+"is_correct": true
+}
+]
+},
+{
+"number": 122,
+"question": "关于均值说法，正确的是().",
+"options": [
+{
+"letter": "A",
+"text": "均值适用于分类数据",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "概况一个数值型数据集合的指标",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "均值就是平均数",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "容易收到极端值或离群点的影响",
+"is_correct": true
+}
+]
+},
+{
+"number": 123,
+"question": "在特征构建过程中，常用的编码技术包括",
+"options": [
+{
+"letter": "A",
+"text": "独热编码",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "分箱处理",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "标签编码",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "块状编码",
+"is_correct": false
+}
+]
+},
+{
+"number": 124,
+"question": "描述性统计分析是一种数据分析方法，主要用于展示数据集合中的一些重要特征，例如().",
+"options": [
+{
+"letter": "A",
+"text": "集中趋势",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "离散程度",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "频数分布",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "可行范围",
+"is_correct": true
+}
+]
+},
+{
+"number": 125,
+"question": "()是常见的探索性统计分析方法。",
+"options": [
+{
+"letter": "A",
+"text": "时间序列分析",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "聚类分析",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "因子分析",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "对应分析",
+"is_correct": true
+}
+]
+},
+{
+"number": 126,
+"question": "()是常用的推断性统计分析方法。",
+"options": [
+{
+"letter": "A",
+"text": "假设检验",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "相关分析",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "回归分析",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "时间序列分析",
+"is_correct": true
+}
+]
+},
+{
+"number": 127,
+"question": "()是常见的降维方法。",
+"options": [
+{
+"letter": "A",
+"text": "结合分析",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "回归分析",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "投影",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "流形学习",
+"is_correct": true
+}
+]
+},
+{
+"number": 128,
+"question": "当你使用Matplotlib绘制条形图时，barn()函数是一种常见的工具，它的参数通常包括()。",
+"options": [
+{
+"letter": "A",
+"text": "y",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "left",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "align",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "color",
+"is_correct": true
+}
+]
+},
+{
+"number": 129,
+"question": "Matplotlib中绘制柱状图时，bar()函数可以选择不同的对齐方式，包括().",
+"options": [
+{
+"letter": "A",
+"text": "color",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "center",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "edge",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "edgecolor",
+"is_correct": false
+}
+]
+},
+{
+"number": 130,
+"question": "以下选项关于饼图的描述，正确的是()。",
+"options": [
+{
+"letter": "A",
+"text": "一种用来描述定性数据频数或百分比的图形",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "通常以圆饼或椭圆饼的形式出现",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "饼图的整个圆代表一个总体的全部数据",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "圆中的一个扇形表示总体的全部类型",
+"is_correct": false
+}
+]
+},
+{
+"number": 131,
+"question": "针对多元数据，可以运用不同的可视化工具，如()，以便更加清晰地展现各维度的变化趋势。",
+"options": [
+{
+"letter": "A",
+"text": "散点图",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "茎叶图",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "气泡图",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "雷达图",
+"is_correct": true
+}
+]
+},
+{
+"number": 132,
+"question": "在人机界面设计中，有很多方式可以表达用户体验，其中包括().",
+"options": [
+{
+"letter": "A",
+"text": "感官体验",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "情感体验",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "环境体验",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "文化体验",
+"is_correct": true
+}
+]
+},
+{
+"number": 133,
+"question": "人机交互界面的分类主要包括()。",
+"options": [
+{
+"letter": "A",
+"text": "纯硬件操作界面",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "纯软件操作界面",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "触控式操作界面",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "感应式操作界面",
+"is_correct": false
+}
+]
+},
+{
+"number": 134,
+"question": "交互性体现在().",
+"options": [
+{
+"letter": "A",
+"text": "产品的技术系统",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "非电子类产品",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "服务",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "组织",
+"is_correct": true
+}
+]
+},
+{
+"number": 135,
+"question": "一种好的用户界面应当具有()的特性。",
+"options": [
+{
+"letter": "A",
+"text": "清晰、简明",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "熟悉、易响应",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "操作一致、有吸引力",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "高效和容错性",
+"is_correct": true
+}
+]
+},
+{
+"number": 136,
+"question": "广义的界面设计是基于( )构建的。",
+"options": [
+{
+"letter": "A",
+"text": "功能性界面为基础",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "环境性界面为前提",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "情感世界为重心",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "理论性为依据",
+"is_correct": false
+}
+]
+},
+{
+"number": 137,
+"question": "()是交互设计常用的方法。",
+"options": [
+{
+"letter": "A",
+"text": "以人为本的设计方法",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "以任务为本的设计方法",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "以安全为本的设计方法",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "传统软件系统设计方法",
+"is_correct": true
+}
+]
+},
+{
+"number": 138,
+"question": "()属于目标导向设计的流程。",
+"options": [
+{
+"letter": "A",
+"text": "调查研究",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "情境建模",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "定义需求",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "概念设计",
+"is_correct": true
+},
+{
+"letter": "E",
+"text": "细化和修改设计",
+"is_correct": true
+}
+]
+},
+{
+"number": 139,
+"question": "James Garrett提出的用户体验包括()等多个方面。",
+"options": [
+{
+"letter": "A",
+"text": "品牌特征",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "信息可用性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "功能性",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "内容性",
+"is_correct": true
+}
+]
+},
+{
+"number": 140,
+"question": "James Garrett提出了一些交互设计的目标，其中包括设计要具有()",
+"options": [
+{
+"letter": "A",
+"text": "有效率",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "易学易记性",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "令人满意",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "通用性",
+"is_correct": true
+}
+]
+},
+{
+"number": 141,
+"question": "在交互设计中，结构层的重点在于()，",
+"options": [
+{
+"letter": "A",
+"text": "视觉设计",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "交互设计",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "信息框架",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "界面",
+"is_correct": false
+}
+]
+},
+{
+"number": 142,
+"question": "在人机交互界面设计中，通常使用()进行设计。",
+"options": [
+{
+"letter": "A",
+"text": "设计师模型",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "实现者模型",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "用户模型",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "机器模型",
+"is_correct": false
+}
+]
+},
+{
+"number": 143,
+"question": "交互设计作为一门跨学科的研究领域，涉及多个方面，例如()。",
+"options": [
+{
+"letter": "A",
+"text": "信息架构设计",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "视觉传达设计",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "工业设计",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "人机工程学",
+"is_correct": true
+}
+]
+},
+{
+"number": 144,
+"question": "以下()属于交互系统设计的步骤。。",
+"options": [
+{
+"letter": "A",
+"text": "需求分析、用户研究",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "概念设计、信息架构设计",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "原型设计、交互方式设计",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "视觉设计、程序实现",
+"is_correct": true
+}
+]
+},
+{
+"number": 145,
+"question": "原型设计的重要性在于它()。",
+"options": [
+{
+"letter": "A",
+"text": "便于沟通",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "提高代码质量",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "敏捷快速",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "工作轻松",
+"is_correct": true
+}
+]
+},
+{
+"number": 146,
+"question": "现代科技已经发展出多种人机交互方式，包括()等。",
+"options": [
+{
+"letter": "A",
+"text": "触摸交互",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "语音交互",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "眼神交互",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "增强现实",
+"is_correct": true
+}
+]
+},
+{
+"number": 147,
+"question": "越来越多的公司正在采用低保真原型应用，其使用优势在().",
+"options": [
+{
+"letter": "A",
+"text": "具有丰富的交互效果",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "可以快速触达到用户的反馈",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "可以将问题可视化",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "解决关于产品的易用性和功能上的核心问题",
+"is_correct": true
+}
+]
+},
+{
+"number": 148,
+"question": "高保真原型是一种有效的设计工具，可以呈现产品的().",
+"options": [
+{
+"letter": "A",
+"text": "流程",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "逻辑",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "布局",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "视觉效果",
+"is_correct": true
+}
+]
+},
+{
+"number": 149,
+"question": "语音交互系统采用的途径有().",
+"options": [
+{
+"letter": "A",
+"text": "用基于语音识别和理解技术",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "依靠音频进行交互",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "利用语音技术与系统的其他交互方式结合",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "眼神传递信息",
+"is_correct": false
+}
+]
+},
+{
+"number": 150,
+"question": "语音识别技术十分跨越多个领域，包括()方面。",
+"options": [
+{
+"letter": "A",
+"text": "生理学",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "心理学",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "人的体态语言(说话时的行为动作)",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "计算机科学",
+"is_correct": true
+}
+]
+},
+{
+"number": 151,
+"question": "语音识别技术将人类的语言转化为计算机能够理解的形式，例如将语言内容转换为()。",
+"options": [
+{
+"letter": "A",
+"text": "输入按键",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "二进制编码",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "绘图",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "字符序列",
+"is_correct": true
+}
+]
+},
+{
+"number": 152,
+"question": "语音特征提取的过程包含()步骤。",
+"options": [
+{
+"letter": "A",
+"text": "声音录入",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数字化采样",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "信号预处理",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "模型匹配",
+"is_correct": false
+}
+]
+},
+{
+"number": 153,
+"question": "一个全面的语音识别系统可以分为()几个部分。",
+"options": [
+{
+"letter": "A",
+"text": "语音特征提取",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "字典建立",
+"is_correct": false
+},
+{
+"letter": "C",
+"text": "声学模型与模式匹配",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "语意理解",
+"is_correct": true
+}
+]
+},
+{
+"number": 154,
+"question": "建立一个完整的数据标注培训体系，包括()，以培养和提高数据标注员的能力和素质。",
+"options": [
+{
+"letter": "A",
+"text": "建立严格的培训流程",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "有完善的职称等级制度",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "设立激励制度",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "提供多元化的美食",
+"is_correct": false
+}
+]
+},
+{
+"number": 155,
+"question": "初级数据标注员需要掌握()等数据标注类型的基本操作技能。",
+"options": [
+{
+"letter": "A",
+"text": "2D图像标注",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "文字标注",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "图像采集",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "语音标注",
+"is_correct": true
+}
+]
+},
+{
+"number": 156,
+"question": "帮助有超过两周以上标注经验的数据标注员提升质量，计划内容包括().",
+"options": [
+{
+"letter": "A",
+"text": "强化基础数据标注规范，查漏补缺",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据标注过程问题总结指导",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "质检一条其他人的数据",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "培训员进行指导，能力巩固",
+"is_correct": true
+}
+]
+},
+{
+"number": 157,
+"question": "数据主要来源包括以下()。",
+"options": [
+{
+"letter": "A",
+"text": "手写字以及画图数据",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "泛互联网数据",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "大量传感器的机器数据",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "行业的多结构专业数据",
+"is_correct": true
+}
+]
+},
+{
+"number": 158,
+"question": "数据预处理包括()等方面的工作。",
+"options": [
+{
+"letter": "A",
+"text": "数据清理",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "数据集成",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "数据变换",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "数据归约",
+"is_correct": true
+}
+]
+},
+{
+"number": 159,
+"question": "Kettle是一款数据()工具，旨在帮助用户更便捷地管理数据。",
+"options": [
+{
+"letter": "A",
+"text": "复制",
+"is_correct": false
+},
+{
+"letter": "B",
+"text": "转换",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "备份",
+"is_correct": false
+},
+{
+"letter": "D",
+"text": "抽取",
+"is_correct": true
+}
+]
+},
+{
+"number": 160,
+"question": "在一个数据标注项目的顺利完成过程中，通常需要涉及到()等多个方面的合作。",
+"options": [
+{
+"letter": "A",
+"text": "销售部",
+"is_correct": true
+},
+{
+"letter": "B",
+"text": "项目部",
+"is_correct": true
+},
+{
+"letter": "C",
+"text": "生产部和平台部",
+"is_correct": true
+},
+{
+"letter": "D",
+"text": "资源部和财务部",
+"is_correct": true
+}
+]
+}
+];
+
+        let userAnswers = {};
+        let wrongQuestionsSet = []; // 错题集
+        let randomPracticeQuestions = []; // 随机练习题目
+        let randomPracticeAnswers = {}; // 随机练习答案
+        let randomTimerInterval = null; // 随机练习计时器
+        let randomStartTime = null; // 随机练习开始时间
+        let randomElapsedTime = 0; // 随机练习经过时间
+        let isRandomTimerRunning = false; // 随机练习计时器状态
+
+        // 从localStorage加载错题集
+        function loadWrongQuestionsSet() {
+            const saved = localStorage.getItem('wrongQuestionsSet');
+            if (saved) {
+                wrongQuestionsSet = JSON.parse(saved);
+            }
+        }
+
+        // 保存错题集到localStorage
+        function saveWrongQuestionsSet() {
+            localStorage.setItem('wrongQuestionsSet', JSON.stringify(wrongQuestionsSet));
+        }
+
+        // 添加错题到错题集（避免重复）
+        function addToWrongQuestionsSet(questionNumber) {
+            const exists = wrongQuestionsSet.find(q => q.number === questionNumber);
+            if (!exists) {
+                const question = questions.find(q => q.number === questionNumber);
+                if (question) {
+                    wrongQuestionsSet.push(question);
+                    saveWrongQuestionsSet();
+                }
+            }
+        }
+
+        // 从错题集中移除
+        function removeFromWrongQuestionsSet(questionNumber) {
+            wrongQuestionsSet = wrongQuestionsSet.filter(q => q.number !== questionNumber);
+            saveWrongQuestionsSet();
+        }
+
+        // 计时器相关变量
+        let timerInterval = null;
+        let startTime = null;
+        let elapsedTime = 0;
+        let isTimerRunning = false;
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            if (timerElement) {
+                timerElement.textContent = formatTime(elapsedTime);
+            }
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (!isTimerRunning) {
+                startTime = Date.now() - elapsedTime * 1000;
+                isTimerRunning = true;
+                timerInterval = setInterval(() => {
+                    elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                    updateTimerDisplay();
+                }, 1000);
+            }
+        }
+
+        // 停止计时器
+        function stopTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+            }
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            stopTimer();
+            elapsedTime = 0;
+            startTime = null;
+            updateTimerDisplay();
+        }
+
+        // 渲染题目
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const questionHtml = `
+                    <div class="bg-white rounded-lg shadow-md p-4" id="question-${q.number}">
+                        <div class="flex items-start mb-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                ${q.number}
+                            </span>
+                            <div class="flex-1">
+                                <h3 class="text-base font-medium text-gray-800">${q.question}</h3>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-11">
+                            ${q.options.map(opt => `
+                                <div class="relative">
+                                    <input type="checkbox"
+                                           id="q${q.number}_opt${opt.letter}"
+                                           class="option-checkbox sr-only"
+                                           data-question="${q.number}"
+                                           data-option="${opt.letter}"
+                                           onchange="updateProgress()">
+                                    <label for="q${q.number}_opt${opt.letter}"
+                                           class="flex items-center p-2 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition">
+                                        <span class="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded mr-2 flex items-center justify-center">
+                                            <span class="check-dot hidden w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                                        </span>
+                                        <span class="font-medium text-gray-700 mr-1 text-sm">${opt.letter}.</span>
+                                        <span class="text-gray-600 text-sm">${opt.text}</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="ml-11 mt-3 answer-feedback hidden" id="feedback-${q.number}"></div>
+                    </div>
+                `;
+                container.innerHTML += questionHtml;
+            });
+
+            // 启动计时器
+            startTimer();
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.option-checkbox');
+            const answeredQuestions = new Set();
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    answeredQuestions.add(cb.dataset.question);
+                }
+            });
+
+            const progress = answeredQuestions.size;
+            const total = questions.length;
+            const percentage = (progress / total) * 100;
+
+            document.getElementById('progress-text').textContent = `${progress} / ${total}`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        // 提交考试
+        function submitExam() {
+            // 停止计时器
+            stopTimer();
+
+            // 收集用户答案
+            userAnswers = {};
+            const checkboxes = document.querySelectorAll('.option-checkbox:checked');
+
+            checkboxes.forEach(cb => {
+                const qNum = cb.dataset.question;
+                const optLetter = cb.dataset.option;
+
+                if (!userAnswers[qNum]) {
+                    userAnswers[qNum] = [];
+                }
+                userAnswers[qNum].push(optLetter);
+            });
+
+            // 检查是否有未完成的题目
+            const answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount < questions.length) {
+                if (!confirm(`你还有 ${questions.length - answeredCount} 道题未作答，确定要提交吗？`)) {
+                    return;
+                }
+            }
+
+            // 评分并显示结果
+            gradeExam();
+        }
+
+        // 评分
+        function gradeExam() {
+            let correctCount = 0;
+            let wrongCount = 0;
+            const wrongQuestions = [];
+
+            questions.forEach(q => {
+                const userAns = userAnswers[q.number] || [];
+                const correctAns = q.options.filter(o => o.is_correct).map(o => o.letter);
+
+                // 检查答案是否正确
+                const isCorrect = arraysEqual(userAns.sort(), correctAns.sort());
+
+                if (isCorrect) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                    // 添加到错题集
+                    addToWrongQuestionsSet(q.number);
+                    wrongQuestions.push({
+                        question: q,
+                        userAns: userAns,
+                        correctAns: correctAns
+                    });
+                }
+
+                // 显示反馈
+                showFeedback(q, userAns, correctAns, isCorrect);
+            });
+
+            // 显示结果弹窗
+            showResultModal(correctCount, wrongCount, wrongQuestions);
+        }
+
+        // 比较数组
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) return false;
+            return a.every((val, index) => val === b[index]);
+        }
+
+        // 显示反馈
+        function showFeedback(question, userAns, correctAns, isCorrect) {
+            const feedbackEl = document.getElementById(`feedback-${question.number}`);
+            const questionEl = document.getElementById(`question-${question.number}`);
+
+            feedbackEl.classList.remove('hidden');
+
+            // 禁用所有复选框
+            questionEl.querySelectorAll('.option-checkbox').forEach(cb => {
+                cb.disabled = true;
+                const label = cb.nextElementSibling;
+                const optLetter = cb.dataset.option;
+
+                // 移除之前的样式
+                label.classList.remove('correct-answer', 'wrong-answer', 'missed-answer');
+
+                // 添加样式
+                if (question.options.find(o => o.letter === optLetter).is_correct) {
+                    label.classList.add('correct-answer');
+                } else if (userAns.includes(optLetter)) {
+                    label.classList.add('wrong-answer');
+                }
+            });
+
+            // 显示反馈信息
+            if (isCorrect) {
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center text-green-600">
+                        <i class="fa fa-check-circle text-xl mr-2"></i>
+                        <span class="font-medium">回答正确！</span>
+                    </div>
+                `;
+            } else {
+                const missedAns = correctAns.filter(a => !userAns.includes(a));
+                const wrongAns = userAns.filter(a => !correctAns.includes(a));
+                feedbackEl.innerHTML = `
+                    <div class="text-red-600">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-times-circle text-xl mr-2"></i>
+                            <span class="font-medium">回答错误</span>
+                        </div>
+                        <div class="text-sm">
+                            <p><strong>你的答案：</strong>${userAns.length > 0 ? userAns.join(', ') : '未作答'}</p>
+                            <p><strong>正确答案：</strong>${correctAns.join(', ')}</p>
+                            ${wrongAns.length > 0 || missedAns.length > 0 ? `<p class="text-orange-600"><strong>错误分析：</strong>${wrongAns.length > 0 ? `错选了${wrongAns.join(', ')}` : ''}${wrongAns.length > 0 && missedAns.length > 0 ? '；' : ''}${missedAns.length > 0 ? `漏选了${missedAns.join(', ')}` : ''}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示结果弹窗
+        function showResultModal(correctCount, wrongCount, wrongQuestions) {
+            const modal = document.getElementById('result-modal');
+            const title = document.getElementById('result-title');
+            const content = document.getElementById('result-content');
+
+            const score = correctCount;
+            const percentage = ((correctCount / questions.length) * 100).toFixed(1);
+
+            let grade = '';
+            let gradeColor = '';
+            if (percentage >= 90) {
+                grade = '优秀';
+                gradeColor = 'text-green-600';
+            } else if (percentage >= 80) {
+                grade = '良好';
+                gradeColor = 'text-blue-600';
+            } else if (percentage >= 60) {
+                grade = '及格';
+                gradeColor = 'text-yellow-600';
+            } else {
+                grade = '不及格';
+                gradeColor = 'text-red-600';
+            }
+
+            title.textContent = `考试结果：${grade}`;
+            title.className = `text-2xl font-bold text-center mb-6 ${gradeColor}`;
+
+            content.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="text-6xl font-bold ${gradeColor} mb-2">${score}</div>
+                    <div class="text-gray-600">总分：${questions.length} 分</div>
+                    <div class="text-gray-500">正确率：${percentage}%</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-green-600">${correctCount}</div>
+                        <div class="text-gray-600">答对</div>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-red-600">${wrongCount}</div>
+                        <div class="text-gray-600">答错</div>
+                    </div>
+                </div>
+            `;
+
+            // 保存错题信息供后续查看
+            window.wrongQuestions = wrongQuestions;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // 查看错题
+        function reviewWrongAnswers() {
+            closeModal();
+            // 滚动到第一个错题
+            if (window.wrongQuestions && window.wrongQuestions.length > 0) {
+                const firstWrong = window.wrongQuestions[0].question;
+                const element = document.getElementById(`question-${firstWrong.number}`);
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('ring-4', 'ring-red-400');
+                setTimeout(() => {
+                    element.classList.remove('ring-4', 'ring-red-400');
+                }, 2000);
+            }
+        }
+
+        // 开始答题
+        function startExam() {
+            // 隐藏开始界面
+            const startScreen = document.getElementById('start-screen');
+            startScreen.classList.add('hidden');
+
+            // 显示顶部信息栏
+            const headerBar = document.getElementById('header-bar');
+            headerBar.classList.remove('hidden');
+
+            // 显示题目容器
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.classList.remove('hidden');
+
+            // 显示提交按钮栏
+            const submitBar = document.getElementById('submit-bar');
+            submitBar.classList.remove('hidden');
+
+            // 渲染题目（内部会启动计时器）
+            renderQuestions();
+        }
+
+        // 重置所有
+        function resetAll() {
+            if (confirm('确定要重置所有答案吗？重置后将返回开始界面。')) {
+                // 清空用户答案
+                userAnswers = {};
+
+                // 取消选中所有复选框
+                document.querySelectorAll('.option-checkbox').forEach(cb => {
+                    cb.checked = false;
+                    cb.disabled = false;
+                });
+
+                // 移除所有样式
+                document.querySelectorAll('.option-checkbox + label').forEach(label => {
+                    label.classList.remove('correct-answer', 'wrong-answer', 'missed-answer');
+                });
+
+                // 隐藏所有反馈
+                document.querySelectorAll('.answer-feedback').forEach(fb => {
+                    fb.classList.add('hidden');
+                });
+
+                // 重置计时器
+                resetTimer();
+
+                // 重置进度
+                updateProgress();
+
+                // 隐藏顶部信息栏、题目容器和提交按钮
+                document.getElementById('header-bar').classList.add('hidden');
+                document.getElementById('questions-container').classList.add('hidden');
+                document.getElementById('submit-bar').classList.add('hidden');
+
+                // 显示开始界面
+                document.getElementById('start-screen').classList.remove('hidden');
+
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadWrongQuestionsSet();
+            renderQuestions();
+        });
+
+        // 显示错题集
+        function showWrongQuestionsSet() {
+            if (wrongQuestionsSet.length === 0) {
+                alert('错题集为空，先去做题吧！');
+                return;
+            }
+
+            // 隐藏开始界面和答题界面
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('header-bar').classList.add('hidden');
+            document.getElementById('questions-container').classList.add('hidden');
+            document.getElementById('submit-bar').classList.add('hidden');
+
+            // 停止计时器
+            stopTimer();
+
+            // 显示错题集界面
+            const wrongScreen = document.getElementById('wrong-questions-screen');
+            wrongScreen.classList.remove('hidden');
+
+            // 更新错题信息
+            document.getElementById('wrong-questions-info').textContent =
+                `共有 ${wrongQuestionsSet.length} 道错题，答对后将自动从错题集中移除`;
+
+            // 渲染错题
+            renderWrongQuestions();
+        }
+
+        // 渲染错题
+        function renderWrongQuestions() {
+            const container = document.getElementById('wrong-questions-list');
+            container.innerHTML = '';
+
+            wrongQuestionsSet.forEach((q, index) => {
+                const questionHtml = `
+                    <div class="bg-white rounded-lg shadow-md p-4" id="wrong-q-${q.number}">
+                        <div class="flex items-start mb-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                ${index + 1}
+                            </span>
+                            <div class="flex-1">
+                                <h3 class="text-base font-medium text-gray-800">${q.question}</h3>
+                                <p class="text-xs text-gray-500 mt-1">原题号：${q.number}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-11">
+                            ${q.options.map(opt => `
+                                <div class="relative">
+                                    <input type="checkbox"
+                                           id="wrong_q${q.number}_opt${opt.letter}"
+                                           class="wrong-option-checkbox sr-only"
+                                           data-question="${q.number}"
+                                           data-option="${opt.letter}">
+                                    <label for="wrong_q${q.number}_opt${opt.letter}"
+                                           class="flex items-center p-2 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-orange-400 transition">
+                                        <span class="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded mr-2 flex items-center justify-center">
+                                            <span class="check-dot hidden w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                                        </span>
+                                        <span class="font-medium text-gray-700 mr-1 text-sm">${opt.letter}.</span>
+                                        <span class="text-gray-600 text-sm">${opt.text}</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="ml-11 mt-3 answer-feedback hidden" id="wrong-feedback-${q.number}"></div>
+                    </div>
+                `;
+                container.innerHTML += questionHtml;
+            });
+        }
+
+        // 提交错题练习
+        function submitWrongQuestionsPractice() {
+            // 收集用户答案
+            const practiceAnswers = {};
+            const checkboxes = document.querySelectorAll('.wrong-option-checkbox:checked');
+
+            checkboxes.forEach(cb => {
+                const qNum = cb.dataset.question;
+                const optLetter = cb.dataset.option;
+
+                if (!practiceAnswers[qNum]) {
+                    practiceAnswers[qNum] = [];
+                }
+                practiceAnswers[qNum].push(optLetter);
+            });
+
+            // 检查是否有未完成的题目
+            const answeredCount = Object.keys(practiceAnswers).length;
+            if (answeredCount < wrongQuestionsSet.length) {
+                if (!confirm(`你还有 ${wrongQuestionsSet.length - answeredCount} 道题未作答，确定要提交吗？`)) {
+                    return;
+                }
+            }
+
+            // 评分并显示结果
+            gradeWrongQuestionsPractice(practiceAnswers);
+        }
+
+        // 评错题练习
+        function gradeWrongQuestionsPractice(practiceAnswers) {
+            let correctCount = 0;
+            let wrongCount = 0;
+            const toRemove = []; // 要从错题集中移除的题目
+
+            wrongQuestionsSet.forEach(q => {
+                const userAns = practiceAnswers[q.number] || [];
+                const correctAns = q.options.filter(o => o.is_correct).map(o => o.letter);
+                const isCorrect = arraysEqual(userAns.sort(), correctAns.sort());
+
+                if (isCorrect) {
+                    correctCount++;
+                    toRemove.push(q.number);
+                } else {
+                    wrongCount++;
+                }
+
+                // 显示反馈
+                showWrongQuestionsFeedback(q, userAns, correctAns, isCorrect);
+            });
+
+            // 移除答对的题目
+            toRemove.forEach(qNum => {
+                removeFromWrongQuestionsSet(qNum);
+            });
+
+            // 显示结果
+            alert(`练习完成！\n答对：${correctCount} 题\n答错：${wrongCount} 题\n${toRemove.length > 0 ? `已从错题集中移除 ${toRemove.length} 道题目` : ''}`);
+
+            // 如果错题集为空，返回答题界面
+            if (wrongQuestionsSet.length === 0) {
+                closeWrongQuestionsSet();
+            } else {
+                // 重新渲染剩余错题
+                showWrongQuestionsSet();
+            }
+        }
+
+        // 显示错题练习反馈
+        function showWrongQuestionsFeedback(question, userAns, correctAns, isCorrect) {
+            const feedbackEl = document.getElementById(`wrong-feedback-${question.number}`);
+            const questionEl = document.getElementById(`wrong-q-${question.number}`);
+
+            feedbackEl.classList.remove('hidden');
+
+            // 禁用所有复选框
+            questionEl.querySelectorAll('.wrong-option-checkbox').forEach(cb => {
+                cb.disabled = true;
+                const label = cb.nextElementSibling;
+                const optLetter = cb.dataset.option;
+
+                // 移除之前的样式
+                label.classList.remove('correct-answer', 'wrong-answer', 'missed-answer');
+
+                // 添加样式
+                if (question.options.find(o => o.letter === optLetter).is_correct) {
+                    label.classList.add('correct-answer');
+                } else if (userAns.includes(optLetter)) {
+                    label.classList.add('wrong-answer');
+                }
+            });
+
+            // 显示反馈信息
+            if (isCorrect) {
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center text-green-600">
+                        <i class="fa fa-check-circle text-xl mr-2"></i>
+                        <span class="font-medium">回答正确！已从错题集中移除</span>
+                    </div>
+                `;
+            } else {
+                const missedAns = correctAns.filter(a => !userAns.includes(a));
+                const wrongAns = userAns.filter(a => !correctAns.includes(a));
+                feedbackEl.innerHTML = `
+                    <div class="text-red-600">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-times-circle text-xl mr-2"></i>
+                            <span class="font-medium">回答错误，继续加油！</span>
+                        </div>
+                        <div class="text-sm">
+                            <p><strong>你的答案：</strong>${userAns.length > 0 ? userAns.join(', ') : '未作答'}</p>
+                            <p><strong>正确答案：</strong>${correctAns.join(', ')}</p>
+                            ${wrongAns.length > 0 || missedAns.length > 0 ? `<p class="text-orange-600"><strong>错误分析：</strong>${wrongAns.length > 0 ? `错选了${wrongAns.join(', ')}` : ''}${wrongAns.length > 0 && missedAns.length > 0 ? '；' : ''}${missedAns.length > 0 ? `漏选了${missedAns.join(', ')}` : ''}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 关闭错题集
+        function closeWrongQuestionsSet() {
+            // 隐藏错题集界面
+            document.getElementById('wrong-questions-screen').classList.add('hidden');
+
+            // 显示答题界面
+            document.getElementById('header-bar').classList.remove('hidden');
+            document.getElementById('questions-container').classList.remove('hidden');
+            document.getElementById('submit-bar').classList.remove('hidden');
+
+            // 恢复计时器（如果之前在运行）
+            if (elapsedTime > 0 && !isTimerRunning) {
+                startTimer();
+            }
+
+            // 滚动到之前的位置
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 清空错题集
+        function clearWrongQuestionsSet() {
+            if (wrongQuestionsSet.length === 0) {
+                alert('错题集已经是空的了');
+                return;
+            }
+
+            if (confirm(`确定要清空错题集吗？当前共有 ${wrongQuestionsSet.length} 道错题。`)) {
+                wrongQuestionsSet = [];
+                saveWrongQuestionsSet();
+                alert('错题集已清空');
+            }
+        }
+
+        // ==================== 随机练习功能 ====================
+
+        // 随机选择20道题（考虑知识点分布）
+        function selectRandomQuestions() {
+            // 按题目号段分组，确保覆盖不同知识点
+            const groups = [
+                { start: 1, end: 20, count: 3 },    // 职业道德基础
+                { start: 21, end: 40, count: 3 },   // 团队合作
+                { start: 41, end: 60, count: 3 },   // 沟通技巧
+                { start: 61, end: 80, count: 3 },   // 数据标注基础
+                { start: 81, end: 100, count: 2 },  // 标注质量控制
+                { start: 101, end: 120, count: 2 }, // AI基础概念
+                { start: 121, end: 140, count: 2 }, // 模型训练
+                { start: 141, end: 160, count: 2 }  // 项目管理
+            ];
+
+            let selectedQuestions = [];
+
+            // 从每个组中随机选择指定数量的题目
+            groups.forEach(group => {
+                const groupQuestions = questions.filter(q =>
+                    q.number >= group.start && q.number <= group.end
+                );
+
+                // 随机打乱并选择指定数量
+                const shuffled = groupQuestions.sort(() => Math.random() - 0.5);
+                selectedQuestions.push(...shuffled.slice(0, group.count));
+            });
+
+            // 如果不足20题，从剩余题目中随机补充
+            while (selectedQuestions.length < 20) {
+                const remaining = questions.filter(q =>
+                    !selectedQuestions.find(sq => sq.number === q.number)
+                );
+                if (remaining.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * remaining.length);
+                const question = remaining[randomIndex];
+                if (!selectedQuestions.find(sq => sq.number === question.number)) {
+                    selectedQuestions.push(question);
+                }
+            }
+
+            // 按题目编号排序
+            return selectedQuestions.sort((a, b) => a.number - b.number);
+        }
+
+        // 开始随机练习
+        function startRandomPractice() {
+            // 隐藏开始界面
+            document.getElementById('start-screen').classList.add('hidden');
+
+            // 显示随机练习界面
+            document.getElementById('random-practice-screen').classList.remove('hidden');
+
+            // 显示固定顶部信息栏
+            document.getElementById('random-practice-header-bar').classList.remove('hidden');
+
+            // 随机选择20道题
+            randomPracticeQuestions = selectRandomQuestions();
+            randomPracticeAnswers = {};
+
+            // 渲染随机题目
+            renderRandomQuestions();
+
+            // 启动计时器
+            startRandomTimer();
+
+            // 重置进度
+            updateRandomProgress();
+        }
+
+        // 继续随机练习（重新生成20道新题目）
+        function continueRandomPractice() {
+            // 如果用户已经答题，确认是否要重新开始
+            const answeredCount = Object.keys(randomPracticeAnswers).length;
+            if (answeredCount > 0) {
+                if (!confirm(`当前已答 ${answeredCount} 道题，确定要重新开始新的20道题目吗？`)) {
+                    return;
+                }
+            }
+
+            // 重新选择20道题
+            randomPracticeQuestions = selectRandomQuestions();
+            randomPracticeAnswers = {};
+
+            // 渲染随机题目
+            renderRandomQuestions();
+
+            // 重置计时器
+            stopRandomTimer();
+            startRandomTimer();
+
+            // 重置进度
+            updateRandomProgress();
+
+            // 滚动到顶部
+            document.getElementById('random-practice-screen').scrollTop = 0;
+        }
+
+        // 渲染随机题目
+        function renderRandomQuestions() {
+            const container = document.getElementById('random-questions-list');
+            container.innerHTML = '';
+
+            randomPracticeQuestions.forEach((q, index) => {
+                const questionHtml = `
+                    <div class="bg-white rounded-lg shadow-md p-4" id="random-q-${q.number}">
+                        <div class="flex items-start mb-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                ${index + 1}
+                            </span>
+                            <div class="flex-1">
+                                <h3 class="text-base font-medium text-gray-800">${q.question}</h3>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-11">
+                            ${q.options.map(opt => `
+                                <div class="relative">
+                                    <input type="checkbox"
+                                           id="random_q${q.number}_opt${opt.letter}"
+                                           class="random-option-checkbox sr-only"
+                                           data-question="${q.number}"
+                                           data-option="${opt.letter}"
+                                           onchange="updateRandomProgress()">
+                                    <label for="random_q${q.number}_opt${opt.letter}"
+                                           class="flex items-center p-2 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-400 transition">
+                                        <span class="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded mr-2 flex items-center justify-center">
+                                            <span class="check-dot hidden w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                                        </span>
+                                        <span class="font-medium text-gray-700 mr-1 text-sm">${opt.letter}.</span>
+                                        <span class="text-gray-600 text-sm">${opt.text}</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="ml-11 mt-3 answer-feedback hidden" id="random-feedback-${q.number}"></div>
+                    </div>
+                `;
+                container.innerHTML += questionHtml;
+            });
+        }
+
+        // 更新随机练习进度
+        function updateRandomProgress() {
+            const checkboxes = document.querySelectorAll('.random-option-checkbox');
+            const answeredQuestions = new Set();
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    answeredQuestions.add(cb.dataset.question);
+                }
+            });
+
+            const progress = answeredQuestions.size;
+            const total = randomPracticeQuestions.length;
+            const percentage = (progress / total) * 100;
+
+            document.getElementById('random-progress-text').textContent = `${progress} / ${total}`;
+            document.getElementById('random-progress-bar').style.width = `${percentage}%`;
+        }
+
+        // 随机练习计时器函数
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startRandomTimer() {
+            randomStartTime = Date.now() - randomElapsedTime * 1000;
+            isRandomTimerRunning = true;
+
+            randomTimerInterval = setInterval(() => {
+                const now = Date.now();
+                randomElapsedTime = Math.floor((now - randomStartTime) / 1000);
+                document.getElementById('random-timer').textContent = formatTime(randomElapsedTime);
+            }, 1000);
+        }
+
+        function stopRandomTimer() {
+            if (randomTimerInterval) {
+                clearInterval(randomTimerInterval);
+                randomTimerInterval = null;
+            }
+            isRandomTimerRunning = false;
+        }
+
+        function resetRandomTimer() {
+            stopRandomTimer();
+            randomElapsedTime = 0;
+            randomStartTime = null;
+            document.getElementById('random-timer').textContent = '00:00:00';
+        }
+
+        // 提交随机练习
+        function submitRandomPractice() {
+            // 停止计时器
+            stopRandomTimer();
+
+            // 收集用户答案
+            randomPracticeAnswers = {};
+            const checkboxes = document.querySelectorAll('.random-option-checkbox:checked');
+
+            checkboxes.forEach(cb => {
+                const qNum = cb.dataset.question;
+                const optLetter = cb.dataset.option;
+
+                if (!randomPracticeAnswers[qNum]) {
+                    randomPracticeAnswers[qNum] = [];
+                }
+                randomPracticeAnswers[qNum].push(optLetter);
+            });
+
+            // 检查是否有未完成的题目
+            const answeredCount = Object.keys(randomPracticeAnswers).length;
+            if (answeredCount < randomPracticeQuestions.length) {
+                if (!confirm(`你还有 ${randomPracticeQuestions.length - answeredCount} 道题未作答，确定要提交吗？`)) {
+                    startRandomTimer();
+                    return;
+                }
+            }
+
+            // 批改并显示结果
+            let correctCount = 0;
+            let wrongCount = 0;
+            const wrongQuestions = [];
+
+            randomPracticeQuestions.forEach(q => {
+                const userAns = randomPracticeAnswers[q.number] || [];
+                const correctAns = q.options.filter(o => o.is_correct).map(o => o.letter);
+
+                // 排序后比较
+                userAns.sort();
+                correctAns.sort();
+
+                const isCorrect = arraysEqual(userAns, correctAns);
+
+                if (isCorrect) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                    wrongQuestions.push({
+                        question: q,
+                        userAns: userAns,
+                        correctAns: correctAns
+                    });
+                }
+
+                // 显示反馈
+                showRandomFeedback(q, userAns, correctAns, isCorrect);
+            });
+
+            // 显示结果弹窗
+            showRandomResultModal(correctCount, wrongCount, wrongQuestions);
+        }
+
+        // 显示随机练习反馈
+        function showRandomFeedback(question, userAns, correctAns, isCorrect) {
+            const feedbackEl = document.getElementById(`random-feedback-${question.number}`);
+            const questionEl = document.getElementById(`random-q-${question.number}`);
+
+            feedbackEl.classList.remove('hidden');
+
+            // 禁用所有复选框
+            questionEl.querySelectorAll('.random-option-checkbox').forEach(cb => {
+                cb.disabled = true;
+                const label = cb.nextElementSibling;
+                const optLetter = cb.dataset.option;
+
+                // 移除之前的样式
+                label.classList.remove('correct-answer', 'wrong-answer', 'missed-answer');
+
+                // 添加样式
+                if (question.options.find(o => o.letter === optLetter).is_correct) {
+                    label.classList.add('correct-answer');
+                } else if (userAns.includes(optLetter)) {
+                    label.classList.add('wrong-answer');
+                }
+            });
+
+            // 显示反馈信息
+            if (isCorrect) {
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center text-green-600">
+                        <i class="fa fa-check-circle text-xl mr-2"></i>
+                        <span class="font-medium">回答正确！</span>
+                    </div>
+                `;
+            } else {
+                const missedAns = correctAns.filter(a => !userAns.includes(a));
+                const wrongAns = userAns.filter(a => !correctAns.includes(a));
+                feedbackEl.innerHTML = `
+                    <div class="text-red-600">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-times-circle text-xl mr-2"></i>
+                            <span class="font-medium">回答错误</span>
+                        </div>
+                        <div class="text-sm">
+                            <p><strong>你的答案：</strong>${userAns.length > 0 ? userAns.map(ans => {
+                                const opt = question.options.find(o => o.letter === ans);
+                                return opt ? `${ans}. ${opt.text}` : ans;
+                            }).join('；') : '未作答'}</p>
+                            <p><strong>正确答案：</strong>${correctAns.map(ans => {
+                                const opt = question.options.find(o => o.letter === ans);
+                                return `${ans}. ${opt.text}`;
+                            }).join('；')}</p>
+                            ${wrongAns.length > 0 || missedAns.length > 0 ? `<p class="text-orange-600"><strong>错误分析：</strong>${wrongAns.length > 0 ? `错选了${wrongAns.map(ans => {
+                                const opt = question.options.find(o => o.letter === ans);
+                                return opt ? `${ans}. ${opt.text}` : ans;
+                            }).join('；')}` : ''}${wrongAns.length > 0 && missedAns.length > 0 ? '；' : ''}${missedAns.length > 0 ? `漏选了${missedAns.map(ans => {
+                                const opt = question.options.find(o => o.letter === ans);
+                                return `${ans}. ${opt.text}`;
+                            }).join('；')}` : ''}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示随机练习结果弹窗
+        function showRandomResultModal(correctCount, wrongCount, wrongQuestions) {
+            const percentage = ((correctCount / randomPracticeQuestions.length) * 100).toFixed(1);
+            const pass = correctCount >= randomPracticeQuestions.length * 0.6;
+
+            const modalHtml = `
+                <div id="random-result-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg shadow-xl p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div class="text-center mb-6">
+                            <div class="text-6xl mb-4">${pass ? '🎉' : '💪'}</div>
+                            <h2 class="text-3xl font-bold ${pass ? 'text-green-600' : 'text-orange-600'} mb-2">
+                                ${pass ? '练习完成！' : '继续加油！'}
+                            </h2>
+                            <p class="text-gray-600">
+                                ${pass ? '你已经掌握了大部分知识点' : '还需要多加练习哦'}
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-green-50 rounded-lg p-4 text-center">
+                                <div class="text-3xl font-bold text-green-600">${correctCount}</div>
+                                <div class="text-sm text-gray-600">答对题数</div>
+                            </div>
+                            <div class="bg-red-50 rounded-lg p-4 text-center">
+                                <div class="text-3xl font-bold text-red-600">${wrongCount}</div>
+                                <div class="text-sm text-gray-600">答错题数</div>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                <div class="text-3xl font-bold text-blue-600">${percentage}%</div>
+                                <div class="text-sm text-gray-600">正确率</div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-600 mb-6">
+                            <div class="text-center">
+                                <p>总用时：<strong>${formatTime(randomElapsedTime)}</strong></p>
+                            </div>
+                        </div>
+
+                        ${wrongCount > 0 ? `
+                            <div class="mb-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-3">
+                                    <i class="fa fa-exclamation-triangle text-orange-500"></i>
+                                    答错的题目
+                                </h3>
+                                <div class="space-y-4 max-h-96 overflow-y-auto">
+                                    ${wrongQuestions.map(wq => `
+                                        <div class="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-400">
+                                            <div class="mb-3">
+                                                <span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded mb-2">第${wq.question.number}题</span>
+                                                <p class="font-medium text-gray-800 text-base">${wq.question.question}</p>
+                                            </div>
+                                            <div class="text-sm space-y-2">
+                                                <div class="flex items-start">
+                                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                                    <div>
+                                                        <span class="font-medium text-gray-700">你的答案：</span>
+                                                        <span class="text-red-600">${wq.userAns.length > 0 ? wq.userAns.map(ans => {
+                                                            const opt = wq.question.options.find(o => o.letter === ans);
+                                                            return opt ? `${ans}. ${opt.text}` : ans;
+                                                        }).join('；') : '未作答'}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-start">
+                                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                                    <div>
+                                                        <span class="font-medium text-gray-700">正确答案：</span>
+                                                        <span class="text-green-600">${wq.correctAns.map(ans => {
+                                                            const opt = wq.question.options.find(o => o.letter === ans);
+                                                            return `${ans}. ${opt.text}`;
+                                                        }).join('；')}</span>
+                                                    </div>
+                                                </div>
+                                                ${wq.userAns.length > 0 && wq.correctAns.filter(a => !wq.userAns.includes(a)).length > 0 ? `
+                                                    <div class="flex items-start">
+                                                        <i class="fa fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                                                        <div>
+                                                            <span class="font-medium text-gray-700">漏选选项：</span>
+                                                            <span class="text-yellow-600">${wq.correctAns.filter(a => !wq.userAns.includes(a)).map(ans => {
+                                                                const opt = wq.question.options.find(o => o.letter === ans);
+                                                                return `${ans}. ${opt.text}`;
+                                                            }).join('；')}</span>
+                                                        </div>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex gap-3">
+                            <button onclick="closeRandomPracticeResult()" class="flex-1 px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition font-bold">
+                                <i class="fa fa-arrow-left mr-2"></i>
+                                返回首页
+                            </button>
+                            <button onclick="backToRandomQuestions()" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold">
+                                <i class="fa fa-eye mr-2"></i>
+                                查看题目
+                            </button>
+                            <button onclick="restartRandomPractice()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold">
+                                <i class="fa fa-random mr-2"></i>
+                                再练一次
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // 关闭随机练习结果弹窗
+        function closeRandomPracticeResult() {
+            const modal = document.getElementById('random-result-modal');
+            if (modal) {
+                modal.remove();
+            }
+            closeRandomPractice();
+        }
+
+        // 返回查看随机题目
+        function backToRandomQuestions() {
+            const modal = document.getElementById('random-result-modal');
+            if (modal) {
+                modal.remove();
+            }
+            // 不关闭随机练习界面，只关闭弹窗，用户可以查看题目和答案
+        }
+
+        // 重新开始随机练习
+        function restartRandomPractice() {
+            const modal = document.getElementById('random-result-modal');
+            if (modal) {
+                modal.remove();
+            }
+
+            // 重置计时器
+            resetRandomTimer();
+
+            // 重新开始随机练习
+            startRandomPractice();
+        }
+
+        // 关闭随机练习
+        function closeRandomPractice() {
+            // 停止计时器
+            stopRandomTimer();
+
+            // 隐藏固定顶部信息栏
+            document.getElementById('random-practice-header-bar').classList.add('hidden');
+
+            // 隐藏随机练习界面
+            document.getElementById('random-practice-screen').classList.add('hidden');
+
+            // 显示开始界面
+            document.getElementById('start-screen').classList.remove('hidden');
+
+            // 移除结果弹窗
+            const modal = document.getElementById('random-result-modal');
+            if (modal) {
+                modal.remove();
+            }
+
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== 搜索功能 ====================
+
+        let searchTimeout = null;
+
+        // 搜索题目
+        function searchQuestions(keyword) {
+            const clearBtn = document.getElementById('clear-search-btn');
+
+            // 显示/隐藏清除按钮
+            if (keyword.trim()) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+                closeSearchModal();
+                return;
+            }
+
+            // 防抖处理
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(keyword.trim());
+            }, 300);
+        }
+
+        // 执行搜索
+        function performSearch(keyword) {
+            if (!keyword) {
+                closeSearchModal();
+                return;
+            }
+
+            // 在所有题目中搜索
+            const results = questions.filter(q => {
+                return q.question.toLowerCase().includes(keyword.toLowerCase());
+            });
+
+            // 显示搜索结果
+            showSearchResults(results, keyword);
+        }
+
+        // 显示搜索结果
+        function showSearchResults(results, keyword) {
+            const modal = document.getElementById('search-modal');
+            const resultsContainer = document.getElementById('search-results');
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa fa-search text-4xl mb-4"></i>
+                        <p>未找到包含"${keyword}"的题目</p>
+                    </div>
+                `;
+            } else {
+                resultsContainer.innerHTML = results.map(q => {
+                    // 高亮关键词
+                    const highlightedQuestion = highlightKeyword(q.question, keyword);
+
+                    return `
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-blue-400 transition cursor-pointer" onclick="jumpToQuestion(${q.number})">
+                            <div class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                    ${q.number}
+                                </span>
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-gray-800 mb-2">${highlightedQuestion}</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${q.options.map(opt => {
+                                            if (opt.is_correct) {
+                                                // 正确答案 - 绿色标签
+                                                return `
+                                                    <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
+                                                        <i class="fa fa-check mr-1"></i>
+                                                        ${opt.letter}. ${opt.text}
+                                                    </span>
+                                                `;
+                                            } else {
+                                                // 错误选项 - 灰色标签
+                                                return `
+                                                    <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                                                        ${opt.letter}. ${opt.text}
+                                                    </span>
+                                                `;
+                                            }
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 显示弹窗
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // 高亮关键词
+        function highlightKeyword(text, keyword) {
+            if (!keyword) return text;
+            const regex = new RegExp(`(${keyword})`, 'gi');
+            return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+        }
+
+        // 跳转到指定题目
+        function jumpToQuestion(questionNum) {
+            closeSearchModal();
+
+            // 滚动到题目
+            const questionElement = document.getElementById(`question-${questionNum}`);
+            if (questionElement) {
+                questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // 高亮效果
+                questionElement.classList.add('ring-4', 'ring-blue-400', 'ring-opacity-50');
+                setTimeout(() => {
+                    questionElement.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-50');
+                }, 2000);
+            }
+        }
+
+        // 清除搜索
+        function clearSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.value = '';
+            searchQuestions('');
+        }
+
+        // 关闭搜索弹窗
+        function closeSearchModal() {
+            const modal = document.getElementById('search-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

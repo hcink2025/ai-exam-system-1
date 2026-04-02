@@ -37,25 +37,10 @@
             <button onclick="filterByType('多选')" id="btnMulti" class="px-4 py-2 bg-gray-200 text-gray-700 rounded">多选</button>
             <button onclick="filterByType('判断')" id="btnJudge" class="px-4 py-2 bg-gray-200 text-gray-700 rounded">判断</button>
             <button onclick="filterByType('wrong')" id="btnWrong" class="px-4 py-2 bg-gray-200 text-gray-700 rounded"><i class="fa fa-times"></i> 易错题</button>
-            <input type="text" id="searchInput" placeholder="搜索..." class="px-4 py-2 border rounded w-40" onkeyup="searchQuestions()">
             <button onclick="showRandomQuiz()" class="px-4 py-2 bg-green-500 text-white rounded"><i class="fa fa-random"></i> 随机测验</button>
             <button onclick="showMockExam()" class="px-4 py-2 bg-purple-500 text-white rounded"><i class="fa fa-graduation-cap"></i> 模拟考试</button>
+            <input type="text" id="searchInput" placeholder="搜索..." class="px-4 py-2 border rounded w-40 bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-400" onkeyup="searchQuestions()">
             <button onclick="clearAll()" class="px-4 py-2 bg-red-500 text-white rounded"><i class="fa fa-trash"></i> 清空</button>
-        </div>
-    </div>
-
-    <div id="quizPanel" class="hidden bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow p-4 mb-6 text-white">
-        <div class="flex justify-between items-center">
-            <div>
-                <span class="text-lg font-semibold" id="quizTitle">测验模式</span>
-                <span class="ml-4">共 <strong id="quizTotal">0</strong> 题</span>
-                <span class="ml-4">已答: <strong id="quizAnswered">0</strong></span>
-            </div>
-        </div>
-        <div class="mt-3">
-            <div class="bg-white/30 rounded-full h-2">
-                <div id="progressBar" class="bg-white rounded-full h-2 transition-all" style="width:0%"></div>
-            </div>
         </div>
     </div>
 
@@ -279,6 +264,12 @@ function renderQuestions() {
             html += '<button onclick="toggleShowAnswer(' + q.id + ')" class="px-3 py-1 ' + (isShowAnswer ? 'bg-gray-500' : 'bg-orange-500') + ' text-white rounded hover:opacity-80">' + answerBtnText + '</button>';
         }
 
+        // 测验模式下也显示查看答案按钮
+        if (!isSubmitted && quizMode) {
+            var answerBtnText2 = isShowAnswer ? '隐藏答案' : '查看答案';
+            html += '<button onclick="toggleShowAnswer(' + q.id + ')" class="px-3 py-1 ' + (isShowAnswer ? 'bg-gray-500' : 'bg-orange-500') + ' text-white rounded hover:opacity-80">' + answerBtnText2 + '</button>';
+        }
+
         html += '</div></div>';
     }
     c.innerHTML = html;
@@ -485,16 +476,11 @@ function showRandomQuiz() {
     submittedQuestions = {};
     showAnswerQuestions = {};
 
-    document.getElementById('quizTitle').textContent = '随机测验';
     document.getElementById('quizTitleBottom').textContent = '随机测验';
-    document.getElementById('quizPanel').classList.remove('hidden');
     document.getElementById('quizSubmitPanel').classList.remove('hidden');
     document.getElementById('submitPanel').classList.add('hidden');
-    document.getElementById('quizTotal').textContent = quizQuestions.length;
     document.getElementById('quizTotalBottom').textContent = quizQuestions.length;
-    document.getElementById('quizAnswered').textContent = 0;
     document.getElementById('quizAnsweredBottom').textContent = 0;
-    document.getElementById('progressBar').style.width = '0%';
     renderQuestions();
 }
 
@@ -510,16 +496,11 @@ function showMockExam() {
     submittedQuestions = {};
     showAnswerQuestions = {};
 
-    document.getElementById('quizTitle').textContent = '模拟考试';
     document.getElementById('quizTitleBottom').textContent = '模拟考试';
-    document.getElementById('quizPanel').classList.remove('hidden');
     document.getElementById('quizSubmitPanel').classList.remove('hidden');
     document.getElementById('submitPanel').classList.add('hidden');
-    document.getElementById('quizTotal').textContent = quizQuestions.length;
     document.getElementById('quizTotalBottom').textContent = quizQuestions.length;
-    document.getElementById('quizAnswered').textContent = 0;
     document.getElementById('quizAnsweredBottom').textContent = 0;
-    document.getElementById('progressBar').style.width = '0%';
     renderQuestions();
 }
 
@@ -578,7 +559,6 @@ function closePageResult() { document.getElementById('pageResultModal').classLis
 function closeQuiz() {
     quizMode = false;
     quizQuestions = [];
-    document.getElementById('quizPanel').classList.add('hidden');
     document.getElementById('quizSubmitPanel').classList.add('hidden');
     currentPage = 1;
     renderQuestions();
@@ -597,9 +577,7 @@ function updateStats() {
                 quizAns++;
             }
         }
-        document.getElementById('quizAnswered').textContent = quizAns;
         document.getElementById('quizAnsweredBottom').textContent = quizAns;
-        document.getElementById('progressBar').style.width = Math.round(quizAns / quizQuestions.length * 100) + '%';
     }
 }
 

@@ -288,13 +288,17 @@ function submitSingleAnswer(qId) {
     submittedQuestions[qId] = true;
     showAnswerQuestions[qId] = false;
 
-    // 检查是否答错，加入易错题
+    // 检查答案对错，更新易错题状态
     var q = questionsData.find(function(x) { return x.id === qId; });
     var isCorrect = userAnswers[qId].slice().sort().join(',') === q.answer.slice().sort().join(',');
-    if (!isCorrect) {
+    if (isCorrect) {
+        // 答对了，从易错题中移除
+        delete wrongQuestions[qId];
+    } else {
+        // 答错了，加入易错题
         wrongQuestions[qId] = true;
-        updateWrongCount();
     }
+    updateWrongCount();
 
     renderQuestions();
 }
@@ -315,8 +319,12 @@ function submitPageAnswers() {
             showAnswerQuestions[q.id] = false;
             total++;
             var isCorrect = userAnswers[q.id].slice().sort().join(',') === q.answer.slice().sort().join(',');
-            if (isCorrect) correct++;
-            else {
+            if (isCorrect) {
+                correct++;
+                // 答对了，从易错题中移除
+                delete wrongQuestions[q.id];
+            } else {
+                // 答错了，加入易错题
                 wrongQuestions[q.id] = true;
                 wrongList.push({id: q.id, question: q.question, userAnswer: userAnswers[q.id].join(','), correctAnswer: q.answer.join(',')});
             }
@@ -405,6 +413,16 @@ function goToPage(p) { currentPage = p; renderQuestions(); window.scrollTo(0, 0)
 function filterByType(t) {
     currentFilter = t;
     currentPage = 1;
+
+    // 切换到易错题时，清除已提交状态，允许重新作答
+    if (t === 'wrong') {
+        for (var key in wrongQuestions) {
+            delete submittedQuestions[key];
+            delete userAnswers[key];
+            delete showAnswerQuestions[key];
+        }
+    }
+
     renderQuestions();
     var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong'};
     for (var key in btns) {
@@ -493,8 +511,12 @@ function submitAllAnswers() {
             submittedQuestions[q.id] = true;
             total++;
             var isCorrect = a.slice().sort().join(',') === q.answer.slice().sort().join(',');
-            if (isCorrect) correct++;
-            else {
+            if (isCorrect) {
+                correct++;
+                // 答对了，从易错题中移除
+                delete wrongQuestions[q.id];
+            } else {
+                // 答错了，加入易错题
                 wrongQuestions[q.id] = true;
                 wrongList.push({id: q.id, question: q.question, userAnswer: a.join(','), correctAnswer: q.answer.join(',')});
             }

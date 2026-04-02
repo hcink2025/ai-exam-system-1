@@ -240,34 +240,17 @@ function renderQuestions() {
         }
         html += '</div>';
 
-        html += '<div class="mt-4 pt-4 border-t flex items-center justify-between text-sm">';
+        html += '<div class="mt-4 pt-4 border-t flex items-center justify-center text-sm">';
 
         if (isSubmitted) {
             html += '<div>';
             html += '<span class="' + (isCorrect ? 'text-green-600' : 'text-red-600') + ' font-semibold">' + (isCorrect ? '正确' : '错误') + '</span>';
             html += '<span class="ml-4 text-gray-500">正确答案: <strong class="text-green-600">' + q.answer.join(',') + '</strong></span>';
             html += '</div>';
-        } else if (hasAnswer) {
-            // 测验模式下不显示单个题目的提交按钮
-            if (!quizMode) {
-                html += '<button onclick="submitSingleAnswer(' + q.id + ')" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">提交答案</button>';
-            }
-        } else {
-            // 测验模式下不显示"请选择答案"
-            if (!quizMode) {
-                html += '<span class="text-gray-400">请选择答案</span>';
-            }
-        }
-
-        if (!isSubmitted && !quizMode) {
+        } else if (!isSubmitted) {
+            // 所有模式下都只显示查看答案按钮
             var answerBtnText = isShowAnswer ? '隐藏答案' : '查看答案';
             html += '<button onclick="toggleShowAnswer(' + q.id + ')" class="px-3 py-1 ' + (isShowAnswer ? 'bg-gray-500' : 'bg-orange-500') + ' text-white rounded hover:opacity-80">' + answerBtnText + '</button>';
-        }
-
-        // 测验模式下也显示查看答案按钮
-        if (!isSubmitted && quizMode) {
-            var answerBtnText2 = isShowAnswer ? '隐藏答案' : '查看答案';
-            html += '<button onclick="toggleShowAnswer(' + q.id + ')" class="px-3 py-1 ' + (isShowAnswer ? 'bg-gray-500' : 'bg-orange-500') + ' text-white rounded hover:opacity-80">' + answerBtnText2 + '</button>';
         }
 
         html += '</div></div>';

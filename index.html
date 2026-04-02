@@ -459,7 +459,7 @@ function shuffle(arr) {
 function showRandomQuiz() {
     var singles = shuffle(questionsData.filter(function(q) { return q.type === '单选'; }).slice()).slice(0, 15);
     var multis = shuffle(questionsData.filter(function(q) { return q.type === '多选'; }).slice()).slice(0, 3);
-    var judges = shuffle(questionsData.filter(function(q) { return q.type === '判断'; }).slice()).slice(0, 3);
+    var judges = shuffle(questionsData.filter(function(q) { return q.type === '判断'; }).slice()).slice(0, 2);
 
     quizQuestions = singles.concat(multis).concat(judges);
     quizMode = true;

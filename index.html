@@ -215,13 +215,18 @@ function renderQuestions() {
         }
 
         var bgClass = isWrong && !isSubmitted ? 'wrong-question' : 'bg-white';
+        if (favoriteQuestions[q.id]) bgClass += ' favorite-question';
         html += '<div class="' + bgClass + ' rounded-lg shadow p-6">';
         html += '<div class="flex justify-between mb-3">';
         var typeColors = {'单选':'bg-blue-100 text-blue-700', '多选':'bg-purple-100 text-purple-700', '判断':'bg-green-100 text-green-700'};
         html += '<span class="text-sm px-3 py-1 rounded-full ' + typeColors[q.type] + '">' + typeLabel + '</span>';
         if (isWrong) html += '<span class="text-xs px-2 py-1 rounded bg-red-100 text-red-600"><i class="fa fa-times"></i> 易错</span>';
         html += '<span class="text-gray-400 text-sm">第' + q.id + '题</span></div>';
-        html += '<div class="text-lg mb-4">' + q.question + '</div>';
+        var isFav = favoriteQuestions[q.id];
+        html += '<div class="flex justify-between items-start mb-4">';
+        html += '<div class="text-lg flex-1">' + q.question + '</div>';
+        html += '<button onclick="toggleFavorite(' + q.id + ')" class="ml-2 text-xl ' + (isFav ? 'text-yellow-500' : 'text-gray-300') + '" title="' + (isFav ? '取消收藏' : '收藏') + '"><i class="fa ' + (isFav ? 'fa-heart' : 'fa-heart-o') + '"></i></button>';
+        html += '</div>';
         html += '<div class="space-y-2">';
 
         for (var j = 0; j < q.options.length; j++) {
@@ -436,15 +441,29 @@ function filterByType(t) {
 
 function searchQuestions() { currentPage = 1; renderQuestions(); }
 
+function toggleFavorite(qId) {
+    if (favoriteQuestions[qId]) {
+        delete favoriteQuestions[qId];
+    } else {
+        favoriteQuestions[qId] = true;
+    }
+    saveToStorage();
+    updateFavoriteCount();
+    renderQuestions();
+}
+
 function clearAll() {
     if (confirm('确定清空所有答题记录？')) {
         userAnswers = {};
         submittedQuestions = {};
         showAnswerQuestions = {};
         wrongQuestions = {};
+        favoriteQuestions = {};
+        saveToStorage();
         currentPage = 1;
         if (quizMode) closeQuiz();
         updateWrongCount();
+        updateFavoriteCount();
         renderQuestions();
     }
 }

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收藏功能说明 - 人工智能训练师题库系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .step-line::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 60px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+        }
+        .pulse-heart {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-16">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <div class="flex items-center justify-center mb-6">
+                <i class="fa fa-heart text-5xl pulse-heart text-yellow-300 mr-4"></i>
+                <h1 class="text-4xl md:text-5xl font-bold">收藏功能说明</h1>
+            </div>
+            <p class="text-center text-xl text-purple-100">人工智能训练师题库系统</p>
+            <div class="mt-8 flex justify-center">
+                <a href="https://hcink2025.github.io/ai-exam-system-1/" target="_blank"
+                   class="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-yellow-300 hover:text-purple-700 transition-all shadow-lg">
+                    <i class="fa fa-external-link mr-2"></i>立即体验
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 max-w-5xl py-12">
+
+        <!-- 功能概述 -->
+        <section class="mb-12">
+            <div class="bg-white rounded-2xl shadow-lg p-8 border-l-4 border-purple-500">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-star text-yellow-500 mr-3"></i>功能概述
+                </h2>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                    收藏功能允许用户将重要或需要重点复习的题目标记收藏，方便后续快速查找和针对性学习。
+                </p>
+            </div>
+        </section>
+
+        <!-- 功能特性 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-cog text-purple-500 mr-3"></i>功能特性
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 收藏按钮 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-heart text-pink-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">收藏按钮</h3>
+                    </div>
+                    <ul class="text-gray-600 space-y-2">
+                        <li><i class="fa fa-map-marker text-red-400 mr-2"></i><strong>位置：</strong>每道题目文字右侧</li>
+                        <li><i class="fa fa-image text-blue-400 mr-2"></i><strong>图标：</strong>♡ 未收藏 / ♥ 已收藏</li>
+                        <li><i class="fa fa-palette text-green-400 mr-2"></i><strong>颜色：</strong>灰色 → 黄色</li>
+                        <li><i class="fa fa-hand-pointer-o text-orange-400 mr-2"></i><strong>操作：</strong>点击切换状态</li>
+                    </ul>
+                </div>
+
+                <!-- 统计显示 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-bar-chart text-blue-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">统计显示</h3>
+                    </div>
+                    <ul class="text-gray-600 space-y-2">
+                        <li><i class="fa fa-map-marker text-red-400 mr-2"></i><strong>位置：</strong>页面顶部统计栏</li>
+                        <li><i class="fa fa-refresh text-green-400 mr-2"></i><strong>显示：</strong>收藏数量实时更新</li>
+                        <li><i class="fa fa-tag text-purple-400 mr-2"></i><strong>格式：</strong><code class="bg-gray-100 px-2 py-1 rounded">收藏: [数量]</code></li>
+                    </ul>
+                </div>
+
+                <!-- 收藏集筛选 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-filter text-yellow-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">收藏集筛选</h3>
+                    </div>
+                    <ul class="text-gray-600 space-y-2">
+                        <li><i class="fa fa-entrance text-green-400 mr-2"></i><strong>入口：</strong>筛选栏 "♥ 收藏集" 按钮</li>
+                        <li><i class="fa fa-magic text-purple-400 mr-2"></i><strong>功能：</strong>仅显示已收藏题目</li>
+                        <li><i class="fa fa-toggle-on text-blue-400 mr-2"></i><strong>状态：</strong>激活时按钮变黄色</li>
+                    </ul>
+                </div>
+
+                <!-- 视觉高亮 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-sun-o text-yellow-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">视觉高亮</h3>
+                    </div>
+                    <ul class="text-gray-600 space-y-2">
+                        <li><i class="fa fa-fill text-yellow-400 mr-2"></i><strong>背景色：</strong>黄色背景标识</li>
+                        <li><i class="fa fa-square-o text-orange-400 mr-2"></i><strong>边框：</strong>黄色边框</li>
+                        <li><i class="fa fa-eye text-blue-400 mr-2"></i><strong>目的：</strong>快速识别收藏题目</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据存储 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-database text-blue-500 mr-3"></i>数据存储
+            </h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">项目</th>
+                            <th class="px-6 py-4 text-left font-semibold">说明</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-700"><i class="fa fa-hdd-o text-blue-400 mr-2"></i>存储方式</td>
+                            <td class="px-6 py-4 text-gray-600">localStorage 本地存储</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-700"><i class="fa fa-key text-yellow-400 mr-2"></i>存储键名</td>
+                            <td class="px-6 py-4"><code class="bg-gray-100 px-3 py-1 rounded text-purple-600">exam_favoriteQuestions</code></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-700"><i class="fa fa-code text-green-400 mr-2"></i>数据格式</td>
+                            <td class="px-6 py-4"><code class="bg-gray-100 px-3 py-1 rounded text-purple-600">{"1": true, "50": true}</code></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-700"><i class="fa fa-clock-o text-orange-400 mr-2"></i>持久性</td>
+                            <td class="px-6 py-4 text-gray-600">浏览器关闭后数据保留</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-700"><i class="fa fa-trash text-red-400 mr-2"></i>清除方式</td>
+                            <td class="px-6 py-4 text-gray-600">点击"清空"按钮或手动清除浏览器缓存</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 使用说明 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-book text-green-500 mr-3"></i>使用说明
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- 收藏题目 -->
+                <div class="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-lg p-6 border border-pink-100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold text-lg mr-3">1</div>
+                        <h3 class="text-xl font-bold text-gray-800">收藏题目</h3>
+                    </div>
+                    <ol class="space-y-3 text-gray-600 ml-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>浏览题目时，点击题目右侧的心形按钮 <i class="fa fa-heart-o text-pink-500"></i></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>图标变为实心 <i class="fa fa-heart text-yellow-500"></i>，表示收藏成功</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>顶部统计栏收藏数量 +1</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- 取消收藏 -->
+                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-gray-500 text-white rounded-full flex items-center justify-center font-bold text-lg mr-3">2</div>
+                        <h3 class="text-xl font-bold text-gray-800">取消收藏</h3>
+                    </div>
+                    <ol class="space-y-3 text-gray-600 ml-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>点击已收藏题目的心形按钮 <i class="fa fa-heart text-yellow-500"></i></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>图标变为空心 <i class="fa fa-heart-o text-pink-500"></i>，表示取消收藏</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>顶部统计栏收藏数量 -1</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- 查看收藏集 -->
+                <div class="bg-gradient-to-br from-yellow-50 to-white rounded-2xl shadow-lg p-6 border border-yellow-200">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold text-lg mr-3">3</div>
+                        <h3 class="text-xl font-bold text-gray-800">查看收藏集</h3>
+                    </div>
+                    <ol class="space-y-3 text-gray-600 ml-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>点击筛选栏的 <span class="bg-yellow-100 px-2 py-1 rounded font-medium">♥ 收藏集</span> 按钮</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>页面仅显示已收藏的题目</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>再次点击 "全部" 按钮恢复显示所有题目</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- 清空收藏 -->
+                <div class="bg-gradient-to-br from-red-50 to-white rounded-2xl shadow-lg p-6 border border-red-100">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold text-lg mr-3">4</div>
+                        <h3 class="text-xl font-bold text-gray-800">清空收藏</h3>
+                    </div>
+                    <ol class="space-y-3 text-gray-600 ml-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-exclamation-triangle text-orange-500 mt-1 mr-3"></i>
+                            <span>点击页面上的 <span class="bg-red-100 px-2 py-1 rounded font-medium text-red-600">清空</span> 按钮</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-exclamation-triangle text-orange-500 mt-1 mr-3"></i>
+                            <span>确认后将清除所有答题记录和收藏数据</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <span class="text-sm">此操作不可撤销</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 注意事项 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-exclamation-circle text-orange-500 mr-3"></i>注意事项
+            </h2>
+            <div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl shadow-lg p-8 border border-orange-200">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="flex items-start bg-white rounded-lg p-4 shadow-sm">
+                        <i class="fa fa-laptop text-blue-500 text-2xl mr-4 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-1">数据隔离</h4>
+                            <p class="text-gray-600 text-sm">收藏数据存储在当前浏览器，不同浏览器/设备间不同步</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start bg-white rounded-lg p-4 shadow-sm">
+                        <i class="fa fa-user-secret text-purple-500 text-2xl mr-4 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-1">隐私模式</h4>
+                            <p class="text-gray-600 text-sm">浏览器无痕/隐私模式下，关闭窗口后数据将丢失</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start bg-white rounded-lg p-4 shadow-sm">
+                        <i class="fa fa-hdd-o text-green-500 text-2xl mr-4 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-1">存储限制</h4>
+                            <p class="text-gray-600 text-sm">localStorage 一般支持 5MB 存储空间</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start bg-white rounded-lg p-4 shadow-sm">
+                        <i class="fa fa-trash text-red-500 text-2xl mr-4 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-1">清理影响</h4>
+                            <p class="text-gray-600 text-sm">清除浏览器缓存/数据会删除收藏记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技术实现 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-code text-indigo-500 mr-3"></i>技术实现要点
+            </h2>
+            <div class="bg-gray-900 rounded-2xl shadow-lg p-6 overflow-x-auto">
+                <pre class="text-sm text-gray-300"><code class="language-javascript">
+<span class="text-purple-400">// 核心函数</span>
+<span class="text-yellow-400">toggleFavorite</span>(qId)    <span class="text-gray-500">// 切换收藏状态</span>
+<span class="text-yellow-400">saveToStorage</span>()        <span class="text-gray-500">// 保存到 localStorage</span>
+<span class="text-yellow-400">loadFromStorage</span>()      <span class="text-gray-500">// 页面加载时读取数据</span>
+<span class="text-yellow-400">updateFavoriteCount</span>()  <span class="text-gray-500">// 更新统计显示</span>
+
+<span class="text-purple-400">// 数据结构</span>
+<span class="text-blue-400">favoriteQuestions</span> = {
+    <span class="text-green-400">1</span>: <span class="text-orange-400">true</span>,   <span class="text-gray-500">// 题目ID: 是否收藏</span>
+    <span class="text-green-400">50</span>: <span class="text-orange-400">true</span>,
+    <span class="text-green-400">123</span>: <span class="text-orange-400">true</span>
+}
+
+<span class="text-purple-400">// localStorage 存储</span>
+localStorage.<span class="text-yellow-400">setItem</span>(<span class="text-green-400">'exam_favoriteQuestions'</span>,
+    JSON.<span class="text-yellow-400">stringify</span>(favoriteQuestions))
+                </code></pre>
+            </div>
+        </section>
+
+        <!-- 功能关系 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                <i class="fa fa-sitemap text-teal-500 mr-3"></i>与其他功能的关系
+            </h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">功能</th>
+                            <th class="px-6 py-4 text-left font-semibold">关系说明</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 font-medium">
+                                    <i class="fa fa-times mr-2"></i>易错题
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600">独立功能，可同时标记为易错题和收藏</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                                    <i class="fa fa-pencil mr-2"></i>答题记录
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600">独立存储，互不影响</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-medium">
+                                    <i class="fa fa-trash mr-2"></i>清空功能
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600">清空时会同时清除收藏数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 访问入口 -->
+        <section class="mb-8">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg p-8 text-center text-white">
+                <i class="fa fa-rocket text-5xl mb-4"></i>
+                <h2 class="text-2xl font-bold mb-4">立即体验收藏功能</h2>
+                <p class="text-purple-100 mb-6">点击下方按钮访问题库系统，开始使用收藏功能</p>
+                <a href="https://hcink2025.github.io/ai-exam-system-1/" target="_blank"
+                   class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 hover:text-purple-700 transition-all shadow-lg">
+                    <i class="fa fa-heart mr-2"></i>访问题库系统
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-2">
+                <i class="fa fa-heart text-yellow-500 mr-2"></i>
+                人工智能训练师(三级)考试题库系统
+            </p>
+            <p class="text-sm">版本 1.0 | 收藏功能已上线</p>
+        </div>
+    </footer>
+</body>
+</html>

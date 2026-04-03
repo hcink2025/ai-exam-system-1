@@ -133,36 +133,11 @@ var userAnswers = {};
 var submittedQuestions = {};
 var showAnswerQuestions = {};
 var wrongQuestions = {};
-var favoriteQuestions = {};  // 收藏题目
+var favoriteQuestions = {};  // 易错题记录
 var quizMode = false;
 var quizQuestions = [];
 
-// localStorage 操作
-function saveToStorage() {
-    localStorage.setItem('exam_wrongQuestions', JSON.stringify(wrongQuestions));
-    localStorage.setItem('exam_favoriteQuestions', JSON.stringify(favoriteQuestions));
-    localStorage.setItem('exam_userAnswers', JSON.stringify(userAnswers));
-    localStorage.setItem('exam_submittedQuestions', JSON.stringify(submittedQuestions));
-}
-
-function loadFromStorage() {
-    try {
-        var savedWrong = localStorage.getItem('exam_wrongQuestions');
-        var savedFavorite = localStorage.getItem('exam_favoriteQuestions');
-        var savedAnswers = localStorage.getItem('exam_userAnswers');
-        var savedSubmitted = localStorage.getItem('exam_submittedQuestions');
-
-        if (savedWrong) wrongQuestions = JSON.parse(savedWrong);
-        if (savedFavorite) favoriteQuestions = JSON.parse(savedFavorite);
-        if (savedAnswers) userAnswers = JSON.parse(savedAnswers);
-        if (savedSubmitted) submittedQuestions = JSON.parse(savedSubmitted);
-    } catch(e) {
-        console.log('加载本地存储失败');
-    }
-}
-
 function init() {
-    loadFromStorage();
     document.getElementById('singleCount').textContent = questionsData.filter(function(q) { return q.type === '单选'; }).length;
     document.getElementById('multiCount').textContent = questionsData.filter(function(q) { return q.type === '多选'; }).length;
     document.getElementById('judgeCount').textContent = questionsData.filter(function(q) { return q.type === '判断'; }).length;
@@ -233,30 +208,19 @@ function renderQuestions() {
         var isSubmitted = submittedQuestions[q.id];
         var isShowAnswer = showAnswerQuestions[q.id];
         var isWrong = wrongQuestions[q.id];
-        var isFavorite = favoriteQuestions[q.id];
 
         var isCorrect = null;
         if (isSubmitted && hasAnswer) {
             isCorrect = a.slice().sort().join(',') === q.answer.slice().sort().join(',');
         }
 
-        var bgClass = 'bg-white';
-        if (isWrong && !isSubmitted) bgClass = 'wrong-question';
-        if (isFavorite) bgClass = 'favorite-question';
-
+        var bgClass = isWrong && !isSubmitted ? 'wrong-question' : 'bg-white';
         html += '<div class="' + bgClass + ' rounded-lg shadow p-6">';
         html += '<div class="flex justify-between mb-3">';
         var typeColors = {'单选':'bg-blue-100 text-blue-700', '多选':'bg-purple-100 text-purple-700', '判断':'bg-green-100 text-green-700'};
         html += '<span class="text-sm px-3 py-1 rounded-full ' + typeColors[q.type] + '">' + typeLabel + '</span>';
-
-        // 收藏按钮
-        var favBtnClass = isFavorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500';
-        var favBtnIcon = isFavorite ? 'fa-heart' : 'fa-heart-o';
-        html += '<div class="flex items-center gap-2">';
-        html += '<button onclick="toggleFavorite(' + q.id + ')" class="text-xl ' + favBtnClass + '" title="' + (isFavorite ? '取消收藏' : '收藏') + '"><i class="fa ' + favBtnIcon + '"></i></button>';
-        html += '<span class="text-gray-400 text-sm">第' + q.id + '题</span>';
-        html += '</div></div>';
-
+        if (isWrong) html += '<span class="text-xs px-2 py-1 rounded bg-red-100 text-red-600"><i class="fa fa-times"></i> 易错</span>';
+        html += '<span class="text-gray-400 text-sm">第' + q.id + '题</span></div>';
         html += '<div class="text-lg mb-4">' + q.question + '</div>';
         html += '<div class="space-y-2">';
 
@@ -276,7 +240,7 @@ function renderQuestions() {
                 if (a.indexOf(o.letter) >= 0) cls += ' selected';
             }
 
-            var clickHandler = (isSubmitted || isShowAnswer) ? '' : 'onclick="selectOption(' + q.id + ',\\'' + o.letter + '\\', ' + isMulti + ')"';
+            var clickHandler = (isSubmitted || isShowAnswer) ? '' : 'onclick="selectOption(' + q.id + ',\'' + o.letter + '\', ' + isMulti + ')"';
             html += '<div class="' + cls + '" ' + clickHandler + '>';
             html += '<span class="font-bold mr-3">' + o.letter + '</span>';
             html += '<span class="flex-1">' + o.content + '</span>';
@@ -295,6 +259,7 @@ function renderQuestions() {
             html += '<span class="ml-4 text-gray-500">正确答案: <strong class="text-green-600">' + q.answer.join(',') + '</strong></span>';
             html += '</div>';
         } else if (!isSubmitted) {
+            // 所有模式下都只显示查看答案按钮
             var answerBtnText = isShowAnswer ? '隐藏答案' : '查看答案';
             html += '<span></span>';
             html += '<button onclick="toggleShowAnswer(' + q.id + ')" class="px-3 py-1 ' + (isShowAnswer ? 'bg-gray-500' : 'bg-orange-500') + ' text-white rounded hover:opacity-80">' + answerBtnText + '</button>';
@@ -305,17 +270,6 @@ function renderQuestions() {
     c.innerHTML = html;
     renderPagination(f.length);
     updateStats();
-}
-
-function toggleFavorite(qId) {
-    if (favoriteQuestions[qId]) {
-        delete favoriteQuestions[qId];
-    } else {
-        favoriteQuestions[qId] = true;
-    }
-    saveToStorage();
-    updateFavoriteCount();
-    renderQuestions();
 }
 
 function selectOption(q, l, m) {
@@ -337,15 +291,18 @@ function submitSingleAnswer(qId) {
     submittedQuestions[qId] = true;
     showAnswerQuestions[qId] = false;
 
+    // 检查答案对错，更新易错题状态
     var q = questionsData.find(function(x) { return x.id === qId; });
     var isCorrect = userAnswers[qId].slice().sort().join(',') === q.answer.slice().sort().join(',');
     if (isCorrect) {
+        // 答对了，从易错题中移除
         delete wrongQuestions[qId];
     } else {
+        // 答错了，加入易错题
         wrongQuestions[qId] = true;
     }
     updateWrongCount();
-    saveToStorage();
+
     renderQuestions();
 }
 
@@ -367,8 +324,10 @@ function submitPageAnswers() {
             var isCorrect = userAnswers[q.id].slice().sort().join(',') === q.answer.slice().sort().join(',');
             if (isCorrect) {
                 correct++;
+                // 答对了，从易错题中移除
                 delete wrongQuestions[q.id];
             } else {
+                // 答错了，加入易错题
                 wrongQuestions[q.id] = true;
                 wrongList.push({id: q.id, question: q.question, userAnswer: userAnswers[q.id].join(','), correctAnswer: q.answer.join(',')});
             }
@@ -376,7 +335,6 @@ function submitPageAnswers() {
     }
 
     updateWrongCount();
-    saveToStorage();
 
     if (total > 0) {
         var score = Math.round(correct / total * 100);
@@ -459,6 +417,7 @@ function filterByType(t) {
     currentFilter = t;
     currentPage = 1;
 
+    // 切换到易错题时，清除已提交状态，允许重新作答
     if (t === 'wrong') {
         for (var key in wrongQuestions) {
             delete submittedQuestions[key];
@@ -468,7 +427,7 @@ function filterByType(t) {
     }
 
     renderQuestions();
-    var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong', 'favorite':'btnFavorite'};
+    var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong'};
     for (var key in btns) {
         var el = document.getElementById(btns[key]);
         el.className = 'px-4 py-2 ' + (key === t ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700') + ' rounded';
@@ -478,20 +437,14 @@ function filterByType(t) {
 function searchQuestions() { currentPage = 1; renderQuestions(); }
 
 function clearAll() {
-    if (confirm('确定清空所有答题记录和收藏？')) {
+    if (confirm('确定清空所有答题记录？')) {
         userAnswers = {};
         submittedQuestions = {};
         showAnswerQuestions = {};
         wrongQuestions = {};
-        favoriteQuestions = {};
         currentPage = 1;
         if (quizMode) closeQuiz();
-        localStorage.removeItem('exam_wrongQuestions');
-        localStorage.removeItem('exam_favoriteQuestions');
-        localStorage.removeItem('exam_userAnswers');
-        localStorage.removeItem('exam_submittedQuestions');
         updateWrongCount();
-        updateFavoriteCount();
         renderQuestions();
     }
 }
@@ -561,8 +514,10 @@ function submitAllAnswers() {
             var isCorrect = a.slice().sort().join(',') === q.answer.slice().sort().join(',');
             if (isCorrect) {
                 correct++;
+                // 答对了，从易错题中移除
                 delete wrongQuestions[q.id];
             } else {
+                // 答错了，加入易错题
                 wrongQuestions[q.id] = true;
                 wrongList.push({id: q.id, question: q.question, userAnswer: a.join(','), correctAnswer: q.answer.join(',')});
             }
@@ -570,7 +525,6 @@ function submitAllAnswers() {
     }
 
     updateWrongCount();
-    saveToStorage();
 
     var score = total > 0 ? Math.round(correct / total * 100) : 0;
     document.getElementById('resultScore').textContent = score + '%';

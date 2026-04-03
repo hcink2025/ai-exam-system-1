@@ -133,11 +133,34 @@ var userAnswers = {};
 var submittedQuestions = {};
 var showAnswerQuestions = {};
 var wrongQuestions = {};
-var favoriteQuestions = {};  // 易错题记录
+var favoriteQuestions = {};
 var quizMode = false;
 var quizQuestions = [];
 
+function saveToStorage() {
+    localStorage.setItem('exam_wrongQuestions', JSON.stringify(wrongQuestions));
+    localStorage.setItem('exam_favoriteQuestions', JSON.stringify(favoriteQuestions));
+    localStorage.setItem('exam_userAnswers', JSON.stringify(userAnswers));
+    localStorage.setItem('exam_submittedQuestions', JSON.stringify(submittedQuestions));
+}
+
+function loadFromStorage() {
+    try {
+        var savedWrong = localStorage.getItem('exam_wrongQuestions');
+        var savedFavorite = localStorage.getItem('exam_favoriteQuestions');
+        var savedAnswers = localStorage.getItem('exam_userAnswers');
+        var savedSubmitted = localStorage.getItem('exam_submittedQuestions');
+        if (savedWrong) wrongQuestions = JSON.parse(savedWrong);
+        if (savedFavorite) favoriteQuestions = JSON.parse(savedFavorite);
+        if (savedAnswers) userAnswers = JSON.parse(savedAnswers);
+        if (savedSubmitted) submittedQuestions = JSON.parse(savedSubmitted);
+    } catch (e) {
+        console.log('加载本地存储失败');
+    }
+}
+
 function init() {
+    loadFromStorage();
     document.getElementById('singleCount').textContent = questionsData.filter(function(q) { return q.type === '单选'; }).length;
     document.getElementById('multiCount').textContent = questionsData.filter(function(q) { return q.type === '多选'; }).length;
     document.getElementById('judgeCount').textContent = questionsData.filter(function(q) { return q.type === '判断'; }).length;

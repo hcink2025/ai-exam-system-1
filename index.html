@@ -46,6 +46,9 @@
             <button onclick="showRandomQuiz()" class="px-4 py-2 bg-green-500 text-white rounded">随机测验</button>
             <button onclick="showMockExam()" class="px-4 py-2 bg-purple-500 text-white rounded">模拟考试</button>
             <button onclick="clearAll()" class="px-4 py-2 bg-red-500 text-white rounded">清空</button>
+            <span id="progressIndicator" class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded text-sm hidden">
+                <i class="fa fa-save"></i> 进度已保存
+            </span>
             <input type="text" id="searchInput" placeholder="搜索..." class="px-4 py-2 border rounded w-80 bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500" onkeyup="searchQuestions()">
         </div>
     </div>
@@ -145,6 +148,17 @@ function saveToStorage() {
     localStorage.setItem('exam_favoriteQuestions', JSON.stringify(favoriteQuestions));
     localStorage.setItem('exam_userAnswers', JSON.stringify(userAnswers));
     localStorage.setItem('exam_submittedQuestions', JSON.stringify(submittedQuestions));
+    localStorage.setItem('exam_currentPage', currentPage.toString());
+    localStorage.setItem('exam_currentFilter', currentFilter);
+
+    // 显示保存提示
+    var indicator = document.getElementById('progressIndicator');
+    if (indicator) {
+        indicator.classList.remove('hidden');
+        setTimeout(function() {
+            indicator.classList.add('hidden');
+        }, 2000);
+    }
 }
 
 function loadFromStorage() {
@@ -153,10 +167,14 @@ function loadFromStorage() {
         var savedFavorite = localStorage.getItem('exam_favoriteQuestions');
         var savedAnswers = localStorage.getItem('exam_userAnswers');
         var savedSubmitted = localStorage.getItem('exam_submittedQuestions');
+        var savedPage = localStorage.getItem('exam_currentPage');
+        var savedFilter = localStorage.getItem('exam_currentFilter');
         if (savedWrong) wrongQuestions = JSON.parse(savedWrong);
         if (savedFavorite) favoriteQuestions = JSON.parse(savedFavorite);
         if (savedAnswers) userAnswers = JSON.parse(savedAnswers);
         if (savedSubmitted) submittedQuestions = JSON.parse(savedSubmitted);
+        if (savedPage) currentPage = parseInt(savedPage, 10);
+        if (savedFilter) currentFilter = savedFilter;
     } catch (e) {
         console.log('加载本地存储失败');
     }
@@ -164,12 +182,39 @@ function loadFromStorage() {
 
 function init() {
     loadFromStorage();
+
+    // 恢复筛选按钮状态
+    var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong', 'favorite':'btnFavorite'};
+    for (var key in btns) {
+        var el = document.getElementById(btns[key]);
+        if (el) {
+            el.className = 'px-4 py-2 ' + (key === currentFilter ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700') + ' rounded';
+        }
+    }
+
     document.getElementById('singleCount').textContent = questionsData.filter(function(q) { return q.type === '单选'; }).length;
     document.getElementById('multiCount').textContent = questionsData.filter(function(q) { return q.type === '多选'; }).length;
     document.getElementById('judgeCount').textContent = questionsData.filter(function(q) { return q.type === '判断'; }).length;
     updateWrongCount();
     updateFavoriteCount();
     renderQuestions();
+
+    // 显示恢复提示
+    var answeredCount = Object.keys(submittedQuestions).length;
+    if (answeredCount > 0) {
+        showRestoreNotification(answeredCount);
+    }
+}
+
+// 显示恢复进度提示
+function showRestoreNotification(count) {
+    var notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
+    notification.innerHTML = '<i class="fa fa-check-circle"></i><span>已恢复答题进度，已完成 ' + count + ' 题</span><button onclick="this.parentElement.remove()" class="ml-2 hover:bg-green-600 rounded px-2"><i class="fa fa-times"></i></button>';
+    document.body.appendChild(notification);
+    setTimeout(function() {
+        if (notification.parentElement) notification.remove();
+    }, 5000);
 }
 
 function updateWrongCount() {
@@ -314,6 +359,7 @@ function selectOption(q, l, m) {
     } else {
         userAnswers[q] = [l];
     }
+    saveToStorage();
     renderQuestions();
 }
 
@@ -333,6 +379,7 @@ function submitSingleAnswer(qId) {
         wrongQuestions[qId] = true;
     }
     updateWrongCount();
+    saveToStorage();
 
     renderQuestions();
 }
@@ -392,6 +439,7 @@ function submitPageAnswers() {
         document.getElementById('pageResultModal').classList.remove('hidden');
     }
 
+    saveToStorage();
     renderQuestions();
 }
 
@@ -442,7 +490,7 @@ function renderPagination(t) {
     c.innerHTML = h;
 }
 
-function goToPage(p) { currentPage = p; renderQuestions(); window.scrollTo(0, 0); }
+function goToPage(p) { currentPage = p; saveToStorage(); renderQuestions(); window.scrollTo(0, 0); }
 
 function filterByType(t) {
     currentFilter = t;
@@ -457,11 +505,14 @@ function filterByType(t) {
         }
     }
 
+    saveToStorage();
     renderQuestions();
-    var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong'};
+    var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong', 'favorite':'btnFavorite'};
     for (var key in btns) {
         var el = document.getElementById(btns[key]);
-        el.className = 'px-4 py-2 ' + (key === t ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700') + ' rounded';
+        if (el) {
+            el.className = 'px-4 py-2 ' + (key === t ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700') + ' rounded';
+        }
     }
 }
 
@@ -485,11 +536,27 @@ function clearAll() {
         showAnswerQuestions = {};
         wrongQuestions = {};
         favoriteQuestions = {};
-        saveToStorage();
         currentPage = 1;
+        currentFilter = 'all';
+        // 清除 localStorage
+        localStorage.removeItem('exam_wrongQuestions');
+        localStorage.removeItem('exam_favoriteQuestions');
+        localStorage.removeItem('exam_userAnswers');
+        localStorage.removeItem('exam_submittedQuestions');
+        localStorage.removeItem('exam_currentPage');
+        localStorage.removeItem('exam_currentFilter');
         if (quizMode) closeQuiz();
         updateWrongCount();
         updateFavoriteCount();
+        document.getElementById('searchInput').value = '';
+        // 重置筛选按钮状态
+        var btns = {'all':'btnAll', '单选':'btnSingle', '多选':'btnMulti', '判断':'btnJudge', 'wrong':'btnWrong', 'favorite':'btnFavorite'};
+        for (var key in btns) {
+            var el = document.getElementById(btns[key]);
+            if (el) {
+                el.className = 'px-4 py-2 ' + (key === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700') + ' rounded';
+            }
+        }
         renderQuestions();
     }
 }
